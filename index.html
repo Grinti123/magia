@@ -4,23 +4,127 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MAGIA</title>
-  <!-- Styles -->
-  <link rel="stylesheet" href="styles.css">
+  <!-- GSAP & ScrollTrigger -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
+  <script
+  src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"
+  type="module"
+></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: black;
+      overflow-x: hidden;
+    }
+
+    .wrapper, .content {
+      position: relative;
+      width: 100%;
+    }
+
+    .content .section {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 1s ease-out, transform 1s ease-out;
+    }
+
+    .content .section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .image-container {
+      width: 100%;
+      height: 100vh;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      perspective: 500px;
+      overflow: hidden;
+    }
+
+    .image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
 </head>
 <body>
   <div class="wrapper">
     <div class="content">
-      <section class="section hero"></section>
-      <section class="section gradient-purple"></section>
-      <section class="section gradient-blue"></section>
+      <section class="section hero">
+        <dotlottie-player src="https://lottie.host/b819d221-150e-4051-8d33-58c33707e552/s9JUEeLPKf.lottie" background="transparent" speed="1" style="width: 50vw; height: 50vh" loop autoplay></dotlottie-player>
+      </section>
+      <section>
+        <dotlottie-player src="https://lottie.host/25d43b81-4abf-47ae-9215-5e4eefd0872d/NOCMfYflV4.lottie" background="transparent" speed="1" style="width: 50vw; height: 50vh" loop autoplay></dotlottie-player>
+      </section>
+      <section>
+        <dotlottie-player src="https://lottie.host/b65689a2-b35c-46f1-b12e-7816392fce62/2k3XNk5MpJ.lottie" background="transparent" speed="1" style="width: 50vw; height: 50vh" loop autoplay></dotlottie-player>
+      </section>
+      <section>
+        <dotlottie-player src="https://lottie.host/605399ae-490a-474d-9f7b-a47762e01f74/b622o8dMwT.lottie" background="transparent" speed="1" style="width: 50vw; height: 50vh" loop autoplay></dotlottie-player>
+      </section>
     </div>
     <div class="image-container">
-      <img src="https://assets-global.website-files.com/63ec206c5542613e2e5aa784/643312a6bc4ac122fc4e3afa_main%20home.webp" alt="image">
+      <img src="intro.png" alt="image">
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
-  <script src="scripts.js"></script>
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+
+    window.addEventListener("load", () => {
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: ".wrapper",
+          start: "top top",
+          end: "+=150%",
+          pin: true,
+          scrub: true
+        }
+      })
+      .to(".image-container img", {
+        scale: 3,
+        z: 350,
+        transformOrigin: "center center",
+        ease: "power1.inOut"
+      })
+      .to(".section.hero", {
+        scale: 1.1,
+        transformOrigin: "center center",
+        ease: "power1.inOut"
+      }, "<");
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const sections = document.querySelectorAll("section");
+
+      function checkScroll() {
+        sections.forEach((section) => {
+          const sectionTop = section.getBoundingClientRect().top;
+          const triggerPoint = window.innerHeight / 1.2;
+          if (sectionTop < triggerPoint) {
+            section.classList.add("visible");
+          }
+        });
+      }
+
+      window.addEventListener("scroll", checkScroll);
+      checkScroll(); // Initial check
+    });
+  </script>
 </body>
 </html>

@@ -15,7 +15,7 @@ window.addEventListener("load", () => {
       }
     })
     .to("img", {
-      scale: 2,
+      scale: 3,
       z: 350,
       transformOrigin: "center center",
       ease: "power1.inOut"
@@ -30,3 +30,22 @@ window.addEventListener("load", () => {
       "<"
     );
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  const sections = document.querySelectorAll("section");
+
+  function checkScroll() {
+      sections.forEach((section) => {
+          const sectionTop = section.getBoundingClientRect().top;
+          const triggerPoint = window.innerHeight / 1.2; // Trigger fade when section is 80% in view
+
+          if (sectionTop < triggerPoint) {
+              section.classList.add("visible");
+          }
+      });
+  }
+
+  window.addEventListener("scroll", checkScroll);
+  checkScroll(); // Run initially in case first section is already visible
+});
+
