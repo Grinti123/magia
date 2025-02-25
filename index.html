@@ -3,31 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MAGIA</title>
-  <!-- GSAP & ScrollTrigger -->
+  <title>MAGIA - Elevator Door Animation</title>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
   <script
   src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"
-  type="module"
-></script>
+  type="module"></script>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-
     body {
       background-color: black;
       overflow-x: hidden;
     }
-
     .wrapper, .content {
       position: relative;
       width: 100%;
     }
-
     .content .section {
       width: 100%;
       height: 100vh;
@@ -38,12 +33,10 @@
       transform: translateY(50px);
       transition: opacity 1s ease-out, transform 1s ease-out;
     }
-
     .content .section.visible {
       opacity: 1;
       transform: translateY(0);
     }
-
     .image-container {
       width: 100%;
       height: 100vh;
@@ -54,12 +47,158 @@
       z-index: 2;
       perspective: 500px;
       overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-
-    .image-container img {
+    .intro-image {
+      position: absolute;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .door-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2;
+    }
+    .door-frame {
+      position: relative;
+      width: 280px;
+      height: 420px;
+      background: transparent;
+      /* Adjust these margins to align with your image */
+      margin-top: 40px;
+    }
+    .door {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .door-left, .door-right {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 50%;
+      background-color: white;
+      border: 1px solid #999;
+    }
+    .door-left {
+      left: 0;
+      border-right: 1px solid #555;
+    }
+    .door-right {
+      right: 0;
+      border-left: 1px solid #555;
+    }
+
+    /* Door handle styling to match the elevator image */
+    .door-handle-left, .door-handle-right {
+      position: absolute;
+      width: 12px;
+      height: 60px;
+      background-color: #555;
+      border-radius: 5px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .door-handle-left {
+      right: 15px;
+    }
+
+    .door-handle-right {
+      left: 15px;
+    }
+
+    /* Door panel details to match elevator design */
+    .door-panel {
+      position: absolute;
+      width: calc(100% - 20px);
+      height: calc(100% - 80px);
+      border: 1px solid #ddd;
+      top: 40px;
+      left: 10px;
+    }
+
+    /* Floor control panel to match the image */
+    .control-panel {
+      position: absolute;
+      width: 50px;
+      height: 200px;
+      background-color: white;
+      left: -80px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      padding: 10px 0;
+      border: 1px solid #999;
+    }
+
+    .control-button {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: white;
+      border: 1px solid #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+    }
+
+    /* Floor indicator above the door */
+    .floor-indicator {
+      position: absolute;
+      width: 120px;
+      height: 60px;
+      background-color: white;
+      top: -80px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 30px 30px 0 0;
+      border: 1px solid #999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .indicator-needle {
+      width: 60px;
+      height: 30px;
+      background-color: black;
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      transform: rotate(180deg);
+      margin-bottom: 5px;
+    }
+
+    .indicator-numbers {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+    }
+
+    .indicator-number {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background-color: white;
+      border: 1px solid #333;
+      font-size: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
   </style>
 </head>
@@ -69,24 +208,91 @@
       <section class="section hero">
         <dotlottie-player src="https://lottie.host/b819d221-150e-4051-8d33-58c33707e552/s9JUEeLPKf.lottie" background="transparent" speed="1" style="width: 50vw; height: 50vh" loop autoplay></dotlottie-player>
       </section>
-      <section>
+      <section class="section">
         <dotlottie-player src="https://lottie.host/25d43b81-4abf-47ae-9215-5e4eefd0872d/NOCMfYflV4.lottie" background="transparent" speed="1" style="width: 50vw; height: 50vh" loop autoplay></dotlottie-player>
       </section>
-      <section>
+      <section class="section">
         <dotlottie-player src="https://lottie.host/b65689a2-b35c-46f1-b12e-7816392fce62/2k3XNk5MpJ.lottie" background="transparent" speed="1" style="width: 50vw; height: 50vh" loop autoplay></dotlottie-player>
       </section>
-      <section>
+      <section class="section">
         <dotlottie-player src="https://lottie.host/605399ae-490a-474d-9f7b-a47762e01f74/b622o8dMwT.lottie" background="transparent" speed="1" style="width: 50vw; height: 50vh" loop autoplay></dotlottie-player>
       </section>
     </div>
+
     <div class="image-container">
-      <img src="intro.png" alt="image">
+      <!-- Door animations will show through the transparent area of intro.png -->
+      <div class="door-container">
+        <div class="door-frame">
+          <!-- Floor indicator above door -->
+          <div class="floor-indicator">
+            <div class="indicator-needle"></div>
+            <div class="indicator-numbers">
+              <div class="indicator-number">1</div>
+              <div class="indicator-number">2</div>
+              <div class="indicator-number">3</div>
+              <div class="indicator-number">4</div>
+              <div class="indicator-number">5</div>
+            </div>
+          </div>
+
+          <!-- Control panel -->
+          <div class="control-panel">
+            <div class="control-button">●</div>
+            <div class="control-button">1</div>
+            <div class="control-button">2</div>
+            <div class="control-button">3</div>
+            <div class="control-button">4</div>
+          </div>
+
+          <div class="door">
+            <div class="door-left">
+              <div class="door-panel"></div>
+              <div class="door-handle-left"></div>
+            </div>
+            <div class="door-right">
+              <div class="door-panel"></div>
+              <div class="door-handle-right"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- The intro.png with transparent door area -->
+      <img src="/api/placeholder/800/600" alt="Intro Image" class="intro-image" id="intro-image">
     </div>
   </div>
+
   <script>
     gsap.registerPlugin(ScrollTrigger);
 
-    window.addEventListener("load", () => {
+    // Use DOMContentLoaded instead of load to ensure GSAP is ready
+    document.addEventListener("DOMContentLoaded", () => {
+      // Set the actual image path
+      const introImage = document.getElementById('intro-image');
+      const actualImagePath = "intro.png";
+
+      // Only change the src if we can load the actual image
+      const testImg = new Image();
+      testImg.onload = () => {
+        introImage.src = actualImagePath;
+      };
+      testImg.onerror = () => {
+        console.log("Could not load intro.png, using placeholder");
+      };
+      testImg.src = actualImagePath;
+
+      // You may need to adjust these values to align with your image
+      // These adjustments position the door to match the elevator door in the image
+      gsap.set(".door-container", {
+        x: 0,
+        y: 0,
+        scale: 1
+      });
+
+      // Set initial state of the doors (closed)
+      gsap.set(".door-left", { x: 0 });
+      gsap.set(".door-right", { x: 0 });
+
+      // Create the scroll-triggered animation
       gsap.timeline({
         scrollTrigger: {
           trigger: ".wrapper",
@@ -96,12 +302,25 @@
           scrub: true
         }
       })
-      .to(".image-container img", {
-        scale: 3,
+      // First open the doors
+      .to(".door-left", {
+        x: "-100%",
+        ease: "power2.inOut",
+        duration: 0.3
+      }, 0)
+      .to(".door-right", {
+        x: "100%",
+        ease: "power2.inOut",
+        duration: 0.3
+      }, 0)
+      // Then scale the entire image container as in your original code
+      .to(".image-container", {
+        scale: 10,
         z: 350,
         transformOrigin: "center center",
-        ease: "power1.inOut"
-      })
+        ease: "power1.inOut",
+        duration: 0.7
+      }, 0.3)
       .to(".section.hero", {
         scale: 1.1,
         transformOrigin: "center center",
@@ -109,9 +328,9 @@
       }, "<");
     });
 
+    // Handle the section visibility animation
     document.addEventListener("DOMContentLoaded", function () {
       const sections = document.querySelectorAll("section");
-
       function checkScroll() {
         sections.forEach((section) => {
           const sectionTop = section.getBoundingClientRect().top;
@@ -121,7 +340,6 @@
           }
         });
       }
-
       window.addEventListener("scroll", checkScroll);
       checkScroll(); // Initial check
     });
