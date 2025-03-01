@@ -7,6 +7,7 @@
   <!-- GSAP & ScrollTrigger -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollToPlugin.min.js"></script>
   <!-- Lottie Player -->
   <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
   <style>
@@ -121,6 +122,7 @@
       width: 100%;
       gap: 20px;
       flex-wrap: wrap;
+      margin-left: 50px;
     }
 
     #section2 dotlottie-player {
@@ -167,6 +169,7 @@
       width: 100%;
       gap: 20px;
       flex-wrap: wrap;
+      margin-left: 50px
     }
 
     #section4 dotlottie-player {
@@ -180,6 +183,51 @@
       max-width: 40%;
       min-width: 200px;
       object-fit: contain;
+    }
+
+    /* Lift Navigation Styles */
+    .lift-nav {
+      position: fixed;
+      left: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 999; /* Higher than other elements */
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      opacity: 0; /* Start hidden */
+      visibility: hidden; /* Completely hidden initially */
+      transition: opacity 0.8s ease, visibility 0.8s ease; /* Smooth transition */
+    }
+
+    .lift-nav.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .lift-nav-item {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 3px solid #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      background-color: white;
+      color: #000;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .lift-nav-item:hover {
+      transform: scale(1.1);
+    }
+
+    .lift-nav-item.active {
+      background-color: #9575cd;
+      color: white;
     }
 
     /* Media Queries for Responsive Design */
@@ -213,6 +261,16 @@
       #section1 img, #section2 img, #section3 img, #section4 img {
         max-width: 80%;
       }
+
+      .lift-nav {
+        left: 15px;
+      }
+
+      .lift-nav-item {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+      }
     }
 
     /* Tablets and larger mobile (landscape) */
@@ -232,6 +290,10 @@
 
       .door-right {
         border-left-width: 3px;
+      }
+
+      .lift-nav {
+        left: 20px;
       }
     }
 
@@ -258,6 +320,14 @@
   </style>
 </head>
 <body>
+  <!-- Lift Navigation -->
+  <div class="lift-nav">
+    <div class="lift-nav-item" data-section="section1">1</div>
+    <div class="lift-nav-item" data-section="section2">2</div>
+    <div class="lift-nav-item" data-section="section3">3</div>
+    <div class="lift-nav-item" data-section="section4">4</div>
+  </div>
+
   <div class="wrapper">
     <div class="content">
       <section id="section1" class="section">
@@ -265,15 +335,15 @@
           <div class="door-left"></div>
           <div class="door-right"></div>
         </div>
-        <img src="Artboard 7.svg" alt="Artboard 7">
+        <img src="Artboard 221@4x.png" alt="Artboard 7">
         <dotlottie-player src="https://lottie.host/b819d221-150e-4051-8d33-58c33707e552/s9JUEeLPKf.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
       </section>
       <section id="section2" class="section">
-        <img src="2@4x.png" alt="">
         <dotlottie-player src="https://lottie.host/25d43b81-4abf-47ae-9215-5e4eefd0872d/NOCMfYflV4.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
+        <img src="2@4x.png" alt="">
       </section>
       <section id="section3" class="section">
-        <img src="Artboard 9.svg" alt="Artboard 9">
+        <img src="Artboard 231@4x.png" alt="Artboard 9">
         <dotlottie-player src="https://lottie.host/b65689a2-b35c-46f1-b12e-7816392fce62/2k3XNk5MpJ.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
       </section>
       <section id="section4" class="section">
@@ -288,7 +358,7 @@
   </div>
 
   <script>
-    gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
     // Function to handle scroll animation with responsive considerations
     function initScrollAnimation() {
@@ -302,10 +372,30 @@
         scrollTrigger: {
           trigger: ".wrapper",
           start: "top top",
-          end: "+=500%", // Dramatically increased scroll distance (was 300%)
+          end: "+=500%", // Dramatically increased scroll distance
           pin: true,
-          scrub: 3, // Much higher scrub value for extremely smooth, delayed animation (was 1.5)
-          invalidateOnRefresh: true // Important for responsive behavior
+          scrub: 3, // Much higher scrub value for extremely smooth, delayed animation
+          invalidateOnRefresh: true, // Important for responsive behavior
+          onUpdate: function(self) {
+            // Show lift navigation when section1 starts to be visible (after doors open)
+            const liftNav = document.querySelector('.lift-nav');
+            if (self.progress > 0.1) { // Show it early in the animation
+              liftNav.classList.add('visible');
+            }
+
+            // Update active navigation based on scroll position
+            const navItems = document.querySelectorAll('.lift-nav-item');
+            const progress = self.progress * 4; // Scale to 0-4 range for four sections
+            const activeIndex = Math.min(Math.floor(progress), 3); // Keep within 0-3 range
+
+            navItems.forEach((item, index) => {
+              if (index === activeIndex) {
+                item.classList.add('active');
+              } else {
+                item.classList.remove('active');
+              }
+            });
+          }
         }
       });
 
@@ -317,41 +407,53 @@
 
       // Divide the animation into segments with more control
 
-      // 1. Door opening animation - much slower now
+      // 1. Door opening animation
       tl.to(".door-left", {
         x: "-100%",
-        duration: 3, // Much longer duration (was 1.5)
-        ease: "power1.inOut" // Slower easing
+        duration: 3,
+        ease: "power1.inOut"
       }, 0)
       .to(".door-right", {
         x: "100%",
-        duration: 3, // Much longer duration (was 1.5)
-        ease: "power1.inOut" // Slower easing
+        duration: 3,
+        ease: "power1.inOut"
       }, 0)
 
       // Adding a pause between animations
       .to({}, {duration: 1}) // Empty tween for pause
 
-      // 2. Zoom animation - much slower now
+      // Make the lift navigation appear immediately after doors open
+      .call(function() {
+        document.querySelector('.lift-nav').classList.add('visible');
+      })
+
+      // 2. Zoom animation
       .to(".image-container img", {
         scale: 3,
         z: 350,
-        duration: 4, // Much longer duration (was 2)
+        duration: 4,
         transformOrigin: "center center",
         ease: "power1.inOut"
-      }, "+=1") // Added longer delay between animations
+      }, "+=1")
 
       // 3. Section scale animation - coordinated with zoom
       .to(".section:first-child", {
         scale: 1.1,
-        duration: 4, // Much longer duration (was 2)
+        duration: 4,
         transformOrigin: "center center",
         ease: "power1.inOut"
       }, "<");
     }
 
     // Initialize animation on load
-    window.addEventListener("load", initScrollAnimation);
+    window.addEventListener("load", function() {
+      initScrollAnimation();
+
+      // Force the section1 to be visible after a short delay
+      setTimeout(function() {
+        document.getElementById('section1').classList.add('visible');
+      }, 500);
+    });
 
     // Reinitialize on window resize with debounce
     let resizeTimer;
@@ -360,20 +462,68 @@
       resizeTimer = setTimeout(initScrollAnimation, 250);
     });
 
-    // Smooth fade-in using IntersectionObserver with even longer threshold
     document.addEventListener("DOMContentLoaded", function () {
       const sections = document.querySelectorAll(".section");
-      const observer = new IntersectionObserver((entries) => {
+
+      // Create observer for sections for general visibility
+      const sectionsObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            // Add a longer delay for a more dramatic reveal
             setTimeout(() => {
               entry.target.classList.add("visible");
-            }, 300); // Increased delay (was 100)
+            }, 300);
           }
         });
-      }, { threshold: 0.1 }); // Lower threshold for earlier triggering (was 0.15)
-      sections.forEach(section => observer.observe(section));
+      }, { threshold: 0.1 });
+
+      // Observe all sections
+      sections.forEach(section => sectionsObserver.observe(section));
+
+      // Initialize lift navigation
+      const navItems = document.querySelectorAll('.lift-nav-item');
+      const liftNav = document.querySelector('.lift-nav');
+
+      // Make sure the lift nav appears explicitly for section1
+      const section1Observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            liftNav.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+
+      // Specifically observe section1
+      section1Observer.observe(document.getElementById('section1'));
+
+      // Set first nav item as active by default
+      navItems[0].classList.add('active');
+
+      // Handle click events on navigation items
+      navItems.forEach(item => {
+        item.addEventListener('click', function() {
+          const targetSection = this.getAttribute('data-section');
+          const sectionIndex = parseInt(targetSection.replace('section', '')) - 1;
+
+          // Calculate position based on the animation timeline
+          const progress = sectionIndex / 4; // 4 sections total, normalize to 0-1
+          const scrollTrigger = ScrollTrigger.getById('scrolltrigger-main') || ScrollTrigger.getAll()[0];
+
+          if (scrollTrigger) {
+            scrollTrigger.scroll(progress * (scrollTrigger.end - scrollTrigger.start));
+          } else {
+            // Fallback if ScrollTrigger isn't working
+            const scrollDistance = window.innerHeight * sectionIndex;
+            window.scrollTo({
+              top: scrollDistance,
+              behavior: 'smooth'
+            });
+          }
+
+          // Update active state
+          navItems.forEach(nav => nav.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
     });
   </script>
 </body>
