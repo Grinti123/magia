@@ -89,6 +89,99 @@
       height: 50vh;
     }
 
+    /* Fixed section1 flexbox layout */
+    #section1 {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    #section1 dotlottie-player {
+      flex: 1;
+      min-width: 300px;
+      max-width: 600px;
+    }
+
+    #section1 img {
+      height: auto;
+      max-width: 40%;
+      min-width: 200px;
+      object-fit: contain;
+    }
+
+    #section2 {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    #section2 dotlottie-player {
+      flex: 1;
+      min-width: 300px;
+      max-width: 600px;
+    }
+
+    #section2 img {
+      height: auto;
+      max-width: 40%;
+      min-width: 200px;
+      object-fit: contain;
+    }
+
+    /* Fixed section3 flexbox layout */
+    #section3 {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    #section3 img {
+      height: auto;
+      max-width: 40%;
+      min-width: 200px;
+      object-fit: contain;
+    }
+
+    #section3 dotlottie-player {
+      flex: 1;
+      min-width: 300px;
+      max-width: 600px;
+    }
+
+    #section4 {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    #section4 dotlottie-player {
+      flex: 1;
+      min-width: 300px;
+      max-width: 600px;
+    }
+
+    #section4 img {
+      height: auto;
+      max-width: 40%;
+      min-width: 200px;
+      object-fit: contain;
+    }
+
     /* Media Queries for Responsive Design */
     /* Mobile devices (portrait) */
     @media only screen and (max-width: 576px) {
@@ -107,6 +200,18 @@
 
       .door-right {
         border-left-width: 2px;
+      }
+
+      .elevator-door-container {
+        width: 95%;
+      }
+
+      #section1, #section2, #section3, #section4 {
+        flex-direction: column;
+      }
+
+      #section1 img, #section2 img, #section3 img, #section4 img {
+        max-width: 80%;
       }
     }
 
@@ -155,21 +260,25 @@
 <body>
   <div class="wrapper">
     <div class="content">
-      <section class="section">
+      <section id="section1" class="section">
         <div class="elevator-door-container">
           <div class="door-left"></div>
           <div class="door-right"></div>
         </div>
+        <img src="Artboard 7.svg" alt="Artboard 7">
         <dotlottie-player src="https://lottie.host/b819d221-150e-4051-8d33-58c33707e552/s9JUEeLPKf.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
       </section>
-      <section class="section">
+      <section id="section2" class="section">
+        <img src="2@4x.png" alt="">
         <dotlottie-player src="https://lottie.host/25d43b81-4abf-47ae-9215-5e4eefd0872d/NOCMfYflV4.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
       </section>
-      <section class="section">
+      <section id="section3" class="section">
+        <img src="Artboard 9.svg" alt="Artboard 9">
         <dotlottie-player src="https://lottie.host/b65689a2-b35c-46f1-b12e-7816392fce62/2k3XNk5MpJ.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
       </section>
-      <section class="section">
+      <section id="section4" class="section">
         <dotlottie-player src="https://lottie.host/605399ae-490a-474d-9f7b-a47762e01f74/b622o8dMwT.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
+        <img src="Artboard 20.svg" alt="">
       </section>
     </div>
 
@@ -193,9 +302,9 @@
         scrollTrigger: {
           trigger: ".wrapper",
           start: "top top",
-          end: "+=150%",
+          end: "+=500%", // Dramatically increased scroll distance (was 300%)
           pin: true,
-          scrub: true,
+          scrub: 3, // Much higher scrub value for extremely smooth, delayed animation (was 1.5)
           invalidateOnRefresh: true // Important for responsive behavior
         }
       });
@@ -206,27 +315,36 @@
         x: 0 // Reset position in case of resize
       });
 
-      // First add elevator door opening animation - slide to sides
+      // Divide the animation into segments with more control
+
+      // 1. Door opening animation - much slower now
       tl.to(".door-left", {
         x: "-100%",
-        duration: 0.5,
-        ease: "power2.inOut"
+        duration: 3, // Much longer duration (was 1.5)
+        ease: "power1.inOut" // Slower easing
       }, 0)
       .to(".door-right", {
         x: "100%",
-        duration: 0.5,
-        ease: "power2.inOut"
+        duration: 3, // Much longer duration (was 1.5)
+        ease: "power1.inOut" // Slower easing
       }, 0)
 
-      // Then continue with the original animations
+      // Adding a pause between animations
+      .to({}, {duration: 1}) // Empty tween for pause
+
+      // 2. Zoom animation - much slower now
       .to(".image-container img", {
         scale: 3,
         z: 350,
+        duration: 4, // Much longer duration (was 2)
         transformOrigin: "center center",
         ease: "power1.inOut"
-      })
+      }, "+=1") // Added longer delay between animations
+
+      // 3. Section scale animation - coordinated with zoom
       .to(".section:first-child", {
         scale: 1.1,
+        duration: 4, // Much longer duration (was 2)
         transformOrigin: "center center",
         ease: "power1.inOut"
       }, "<");
@@ -242,16 +360,19 @@
       resizeTimer = setTimeout(initScrollAnimation, 250);
     });
 
-    // Smooth fade-in using IntersectionObserver
+    // Smooth fade-in using IntersectionObserver with even longer threshold
     document.addEventListener("DOMContentLoaded", function () {
       const sections = document.querySelectorAll(".section");
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
+            // Add a longer delay for a more dramatic reveal
+            setTimeout(() => {
+              entry.target.classList.add("visible");
+            }, 300); // Increased delay (was 100)
           }
         });
-      }, { threshold: 0.2 });
+      }, { threshold: 0.1 }); // Lower threshold for earlier triggering (was 0.15)
       sections.forEach(section => observer.observe(section));
     });
   </script>
