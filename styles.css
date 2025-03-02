@@ -6,28 +6,63 @@
 
 body {
   background-color: black;
+  overflow-x: hidden;
+  font-family: Arial, sans-serif;
+  height: 100%;
 }
 
-.wrapper,
-.content {
+.wrapper, .content {
   position: relative;
   width: 100%;
-  z-index: 1;
-}
-
-.content {
-  overflow-x: hidden;
 }
 
 .content .section {
   width: 100%;
   height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 1s ease-out, transform 1s ease-out;
+  position: relative;
+  padding: 1rem;
 }
 
-.content .section.hero {
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: cover;
+.content .section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Floor number indicator */
+.floor-number {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  background-color: black;
+  border: 2px solid white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  z-index: 5;
+}
+
+/* Horizontal line through floor number */
+.floor-line {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: white;
+  z-index: 4;
 }
 
 .image-container {
@@ -46,28 +81,395 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
 }
 
-html, body {
+/* Elevator door styles */
+.elevator-door-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: 10;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.door-left, .door-right {
+  position: absolute;
+  top: 0;
   height: 100%;
-  overflow-x: hidden;
-  scroll-behavior: smooth;
+  width: 50%;
+  z-index: 10;
+  background-color: white;
+  border: 2px solid black;
 }
 
-section {
-  height: 100vh; /* Full screen height */
+.door-left {
+  left: 0;
+  border-right: 3px solid black;
+}
+
+.door-right {
+  right: 0;
+  border-left: 3px solid black;
+}
+
+/* Section layouts */
+.section {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.section dotlottie-player {
+  width: 50%;
+  min-width: 300px;
+  height: auto;
+  max-height: 50vh;
+}
+
+.section img {
+  height: auto;
+  width: 40%;
+  min-width: 200px;
+  max-width: 500px;
+  object-fit: contain;
+}
+
+/* Lift Navigation Styles */
+.lift-nav {
+  position: fixed;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+
+.lift-nav.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lift-nav-item {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px solid black;
   display: flex;
   justify-content: center;
   align-items: center;
-  opacity: 0;
-  transform: translateY(50px);
-  transition: opacity 1s ease-out, transform 1s ease-out;
+  font-size: 1.5rem;
+  font-weight: bold;
+  background-color: white;
+  color: black;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* Add a class to make the section visible */
-section.visible {
-  opacity: 1;
-  transform: translateY(0);
+.lift-nav-item:hover {
+  transform: scale(1.1);
 }
 
+.lift-nav-item.active {
+  background-color: #9575cd;
+  color: white;
+}
+
+/* MOBILE STYLES - Small phones */
+@media only screen and (max-width: 480px) {
+  .section {
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: auto;
+    padding: 70px 15px 20px 15px;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .section dotlottie-player {
+    width: 100%;
+    min-width: unset;
+    max-height: 45vh;
+    margin-bottom: 20px;
+  }
+
+  .section img {
+    width: 95%;
+    min-width: unset;
+    max-width: 100%;
+  }
+
+  .floor-number {
+    width: 45px;
+    height: 45px;
+    font-size: 1.4rem;
+    top: 15px;
+  }
+
+  .floor-line {
+    top: 37px;
+  }
+
+  .lift-nav {
+    left: 10px;
+  }
+
+  .lift-nav-item {
+    width: 38px;
+    height: 38px;
+    font-size: 1.2rem;
+    border-width: 2px;
+    gap: 15px;
+  }
+}
+
+/* TABLET STYLES - Larger phones and tablets */
+@media only screen and (min-width: 481px) and (max-width: 768px) {
+  .section {
+    flex-direction: column;
+    padding: 80px 20px 30px 20px;
+    justify-content: center;
+    gap: 30px;
+  }
+
+  .section dotlottie-player {
+    width: 90%;
+    max-height: 45vh;
+    min-width: unset;
+  }
+
+  .section img {
+    width: 85%;
+    min-width: unset;
+    max-width: 500px;
+  }
+
+  .lift-nav {
+    left: 20px;
+  }
+
+  .lift-nav-item {
+    width: 45px;
+    height: 45px;
+    font-size: 1.4rem;
+  }
+
+  .floor-number {
+    width: 55px;
+    height: 55px;
+    font-size: 1.8rem;
+    top: 20px;
+  }
+
+  .floor-line {
+    top: 47px;
+  }
+}
+
+/* Small laptops and large tablets */
+@media only screen and (min-width: 769px) and (max-width: 1024px) {
+  .section {
+    flex-direction: row;
+    justify-content: center;
+    padding: 80px 30px 30px 30px;
+    gap: 30px;
+  }
+
+  .section dotlottie-player,
+  .section img {
+    width: 45%;
+    min-width: unset;
+  }
+
+  .section dotlottie-player {
+    max-height: 50vh;
+  }
+
+  .section img {
+    max-width: 450px;
+  }
+
+  .lift-nav {
+    left: 25px;
+  }
+}
+
+/* Medium to large desktops */
+@media only screen and (min-width: 1025px) and (max-width: 1439px) {
+  .section {
+    justify-content: center;
+    padding: 90px 50px 40px 50px;
+    gap: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .section dotlottie-player {
+    width: 45%;
+    max-width: 650px;
+    max-height: 60vh;
+  }
+
+  .section img {
+    width: 40%;
+    max-width: 600px;
+  }
+
+  .lift-nav {
+    left: 35px;
+  }
+
+  .lift-nav-item {
+    width: 55px;
+    height: 55px;
+    font-size: 1.7rem;
+  }
+
+  .floor-number {
+    width: 65px;
+    height: 65px;
+    font-size: 2.2rem;
+    top: 25px;
+  }
+
+  .floor-line {
+    top: 57px;
+  }
+}
+
+/* Large desktops */
+@media only screen and (min-width: 1440px) {
+  .section {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 100px 60px 40px 60px;
+    gap: 50px;
+  }
+
+  .section dotlottie-player {
+    max-width: 800px;
+    width: 45%;
+    max-height: 65vh;
+  }
+
+  .section img {
+    max-width: 750px;
+    width: 42%;
+  }
+
+  .lift-nav {
+    left: 50px;
+  }
+
+  .lift-nav-item {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+
+  .floor-number {
+    width: 70px;
+    height: 70px;
+    font-size: 2.5rem;
+    top: 30px;
+  }
+
+  .floor-line {
+    top: 65px;
+  }
+}
+
+/* Ultra-wide screens */
+@media only screen and (min-width: 1900px) {
+  .section {
+    max-width: 1900px;
+    gap: 60px;
+  }
+
+  .lift-nav {
+    left: A60px;
+  }
+
+  .lift-nav-item {
+    width: 65px;
+    height: 65px;
+    font-size: 2.1rem;
+  }
+}
+
+/* Fix for very small height screens */
+@media only screen and (max-height: 600px) {
+  .section {
+    height: auto;
+    min-height: 100vh;
+    padding-top: 60px;
+    padding-bottom: 30px;
+    justify-content: flex-start;
+  }
+
+  .section dotlottie-player {
+    max-height: 40vh;
+  }
+
+  .floor-number {
+    width: 40px;
+    height: 40px;
+    font-size: 1.3rem;
+    top: 15px;
+  }
+
+  .floor-line {
+    top: 35px;
+  }
+
+  .lift-nav-item {
+    width: 35px;
+    height: 35px;
+    font-size: 1.2rem;
+    gap: 10px;
+  }
+}
+
+/* Portrait and landscape specific adjustments */
+@media (orientation: portrait) and (max-width: 768px) {
+  .section {
+    flex-direction: column;
+  }
+
+  .section dotlottie-player,
+  .section img {
+    width: 90%;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 700px) {
+  .section {
+    flex-direction: row;
+    padding-top: 70px;
+  }
+
+  .section dotlottie-player,
+  .section img {
+    max-height: 60vh;
+    width: 45%;
+  }
+
+  .floor-number {
+    top: 15px;
+  }
+
+  .floor-line {
+    top: 37px;
+  }
+}
