@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 2. Zoom animation - adjusted for screen size
     .to(".image-container img", {
-      scale: isMobile ? 2 : isDesktop ? 2.5 : 3,
+      scale: isMobile ? 2 : isDesktop ? 4 : 3,
       z: isMobile ? 250 : isDesktop ? 300 : 350,
       duration: 4,
       transformOrigin: "center center",
