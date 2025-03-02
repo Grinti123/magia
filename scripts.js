@@ -63,14 +63,24 @@ document.addEventListener("DOMContentLoaded", function() {
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
     }
 
+    // Check device type
+    const isMobile = window.innerWidth <= 768;
+    const isDesktop = window.innerWidth > 1024;
+
+    // Adjust scroll length based on device type - MUCH SHORTER FOR MOBILE
+    const scrollLength = isMobile ? "+=250%" : isDesktop ? "+=500%" : "+=400%";
+
+    // Adjust scrub speed - FASTER FOR MOBILE
+    const scrubSpeed = isMobile ? 0.5 : 1.5;
+
     // Main timeline with ScrollTrigger
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: ".wrapper",
         start: "top top",
-        end: "+=500%",
+        end: scrollLength, // Shorter scroll distance for mobile
         pin: true,
-        scrub: 1.5, // Faster scrub for more responsive scrolling
+        scrub: scrubSpeed, // Faster scrub for mobile
         invalidateOnRefresh: true,
         id: "scrolltrigger-main",
         onUpdate: function(self) {
@@ -111,9 +121,9 @@ document.addEventListener("DOMContentLoaded", function() {
       autoAlpha: 0
     });
 
-    // Check if on a larger screen
-    const isDesktop = window.innerWidth > 1024;
-    const isMobile = window.innerWidth <= 768;
+    // Adjust animation durations based on device
+    const doorDuration = isMobile ? 1 : 2;
+    const zoomDuration = isMobile ? 1 : 2;
 
     // Show the navigation first
     tl.to(".lift-nav", {
@@ -128,13 +138,13 @@ document.addEventListener("DOMContentLoaded", function() {
     // Door and zoom animations start simultaneously
     .to(".door-left", {
       x: "-100%",
-      duration: 2,
+      duration: doorDuration,
       ease: "power2.out"
     }, 0.3) // Start after nav appears
 
     .to(".door-right", {
       x: "100%",
-      duration: 2,
+      duration: doorDuration,
       ease: "power2.out"
     }, 0.3) // Start at the same time as door-left
 
@@ -142,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function() {
     .to(".image-container img", {
       scale: isMobile ? 2 : isDesktop ? 4 : 3,
       z: isMobile ? 250 : isDesktop ? 300 : 350,
-      duration: 2, // Same duration as doors
+      duration: zoomDuration, // Same duration as doors
       transformOrigin: "center center",
       ease: "power2.out"
     }, 0.3) // Start at the same time as doors
@@ -150,7 +160,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Section scale animation - coordinated with zoom
     .to(".section:first-child", {
       scale: isMobile ? 1.05 : isDesktop ? 1.08 : 1.1,
-      duration: 2, // Match zoom duration
+      duration: zoomDuration, // Match zoom duration
       transformOrigin: "center center",
       ease: "power2.out"
     }, 0.3); // Start at the same time as doors and zoom
@@ -213,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function() {
   // Set first nav item as active by default
   navItems[0].classList.add('active');
 
-  // Handle click events on navigation items
+  // Adjust navigation click behavior for faster response
   navItems.forEach(item => {
     item.addEventListener('click', function() {
       const targetSection = this.getAttribute('data-section');
@@ -227,10 +237,11 @@ document.addEventListener("DOMContentLoaded", function() {
         const progress = sectionIndex / 3; // Normalize to 0-1 (for 4 sections)
         const scrollPosition = scrollTrigger.start + (progress * (scrollTrigger.end - scrollTrigger.start));
 
-        // Scroll to position
+        // Scroll to position - faster for mobile
+        const isMobile = window.innerWidth <= 768;
         gsap.to(window, {
           scrollTo: scrollPosition,
-          duration: 0.8,
+          duration: isMobile ? 0.5 : 0.8, // Faster for mobile
           ease: "power2.inOut"
         });
       } else {
