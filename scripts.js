@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function() {
         start: "top top",
         end: "+=500%",
         pin: true,
-        scrub: 1.5, // Reduced from 3 to 1.5 for faster response to scrolling
+        scrub: 1.5, // Faster scrub for more responsive scrolling
         invalidateOnRefresh: true,
         id: "scrolltrigger-main",
         onUpdate: function(self) {
@@ -115,47 +115,45 @@ document.addEventListener("DOMContentLoaded", function() {
     const isDesktop = window.innerWidth > 1024;
     const isMobile = window.innerWidth <= 768;
 
-    // 1. Door opening animation
-    tl.to(".door-left", {
-      x: "-100%",
-      duration: 2, // Reduced from 3 to 2
-      ease: "power1.inOut"
-    }, 0)
-    .to(".door-right", {
-      x: "100%",
-      duration: 2, // Reduced from 3 to 2
-      ease: "power1.inOut"
-    }, 0)
-
-    // Make lift nav appear when doors finish opening
-    .to(".lift-nav", {
+    // Show the navigation first
+    tl.to(".lift-nav", {
       autoAlpha: 1,
-      duration: 0.3, // Reduced from 0.5 to 0.3
+      duration: 0.3,
       ease: "power1.inOut",
       onComplete: function() {
         document.querySelector('.lift-nav').classList.add('visible');
       }
-    }, "+=0.1")
+    }, 0)
 
-    // Small pause after navigation appears
-    .to({}, {duration: 0.4}) // Reduced from 0.8 to 0.4
+    // Door and zoom animations start simultaneously
+    .to(".door-left", {
+      x: "-100%",
+      duration: 2,
+      ease: "power2.out"
+    }, 0.3) // Start after nav appears
 
-    // 2. Zoom animation - adjusted for screen size and made faster
+    .to(".door-right", {
+      x: "100%",
+      duration: 2,
+      ease: "power2.out"
+    }, 0.3) // Start at the same time as door-left
+
+    // Zoom animation starts simultaneously with the doors
     .to(".image-container img", {
       scale: isMobile ? 2 : isDesktop ? 4 : 3,
       z: isMobile ? 250 : isDesktop ? 300 : 350,
-      duration: 1.5, // Reduced from 4 to 1.5 for faster zoom
+      duration: 2, // Same duration as doors
       transformOrigin: "center center",
-      ease: "power2.out" // Changed to power2.out for more immediate acceleration
-    }, "+=0.2") // Reduced from 0.5 to 0.2
+      ease: "power2.out"
+    }, 0.3) // Start at the same time as doors
 
-    // 3. Section scale animation - coordinated with zoom
+    // Section scale animation - coordinated with zoom
     .to(".section:first-child", {
       scale: isMobile ? 1.05 : isDesktop ? 1.08 : 1.1,
-      duration: 1.5, // Reduced from 4 to 1.5 to match zoom speed
+      duration: 2, // Match zoom duration
       transformOrigin: "center center",
-      ease: "power2.out" // Changed to match zoom animation
-    }, "<");
+      ease: "power2.out"
+    }, 0.3); // Start at the same time as doors and zoom
   }
 
   // Initialize animation
@@ -232,7 +230,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // Scroll to position
         gsap.to(window, {
           scrollTo: scrollPosition,
-          duration: 0.8, // Reduced from 1 to 0.8 for faster navigation
+          duration: 0.8,
           ease: "power2.inOut"
         });
       } else {
