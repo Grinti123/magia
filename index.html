@@ -33,11 +33,44 @@
       opacity: 0;
       transform: translateY(50px);
       transition: opacity 1s ease-out, transform 1s ease-out;
+      position: relative; /* For positioning the floor number */
     }
     .content .section.visible {
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* Floor number indicator */
+    .floor-number {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 60px;
+      background-color: black;
+      border: 2px solid white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      z-index: 5;
+    }
+
+    /* Horizontal line through floor number */
+    .floor-line {
+      position: absolute;
+      top: 50px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background-color: white;
+      z-index: 4;
+    }
+
     .image-container {
       width: 100%;
       height: 100vh;
@@ -122,7 +155,6 @@
       width: 100%;
       gap: 20px;
       flex-wrap: wrap;
-      margin-left: 50px;
     }
 
     #section2 dotlottie-player {
@@ -169,7 +201,6 @@
       width: 100%;
       gap: 20px;
       flex-wrap: wrap;
-      margin-left: 50px
     }
 
     #section4 dotlottie-player {
@@ -271,6 +302,17 @@
         height: 40px;
         font-size: 1.2rem;
       }
+
+      .floor-number {
+        width: 50px;
+        height: 50px;
+        font-size: 1.6rem;
+        top: 15px;
+      }
+
+      .floor-line {
+        top: 40px;
+      }
     }
 
     /* Tablets and larger mobile (landscape) */
@@ -331,6 +373,10 @@
   <div class="wrapper">
     <div class="content">
       <section id="section1" class="section">
+        <!-- Floor number indicator -->
+        <div class="floor-line"></div>
+        <div class="floor-number">1</div>
+
         <div class="elevator-door-container">
           <div class="door-left"></div>
           <div class="door-right"></div>
@@ -339,14 +385,26 @@
         <dotlottie-player src="https://lottie.host/b819d221-150e-4051-8d33-58c33707e552/s9JUEeLPKf.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
       </section>
       <section id="section2" class="section">
+        <!-- Floor number indicator -->
+        <div class="floor-line"></div>
+        <div class="floor-number">2</div>
+
         <dotlottie-player src="https://lottie.host/25d43b81-4abf-47ae-9215-5e4eefd0872d/NOCMfYflV4.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
         <img src="2@4x.png" alt="">
       </section>
       <section id="section3" class="section">
+        <!-- Floor number indicator -->
+        <div class="floor-line"></div>
+        <div class="floor-number">3</div>
+
         <img src="Artboard 231@4x.png" alt="Artboard 9">
         <dotlottie-player src="https://lottie.host/b65689a2-b35c-46f1-b12e-7816392fce62/2k3XNk5MpJ.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
       </section>
       <section id="section4" class="section">
+        <!-- Floor number indicator -->
+        <div class="floor-line"></div>
+        <div class="floor-number">4</div>
+
         <dotlottie-player src="https://lottie.host/605399ae-490a-474d-9f7b-a47762e01f74/b622o8dMwT.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
         <img src="Artboard 20.svg" alt="">
       </section>
@@ -376,17 +434,24 @@
           pin: true,
           scrub: 3, // Much higher scrub value for extremely smooth, delayed animation
           invalidateOnRefresh: true, // Important for responsive behavior
+          id: "scrolltrigger-main", // Add ID for easier reference
           onUpdate: function(self) {
-            // Show lift navigation when section1 starts to be visible (after doors open)
-            const liftNav = document.querySelector('.lift-nav');
-            if (self.progress > 0.1) { // Show it early in the animation
-              liftNav.classList.add('visible');
-            }
-
             // Update active navigation based on scroll position
             const navItems = document.querySelectorAll('.lift-nav-item');
             const progress = self.progress * 4; // Scale to 0-4 range for four sections
-            const activeIndex = Math.min(Math.floor(progress), 3); // Keep within 0-3 range
+
+            // Only update navigation highlight after zoom animation is complete
+            // The zoom animation completes at approximately 20-25% of the total scroll (0.8-1.0 on our 0-4 scale)
+            // Keep section 1 active until progress passes threshold
+            let activeIndex;
+
+            if (progress < 4.0) {
+              // Keep section 1 highlighted during the zoom animation
+              activeIndex = 0;
+            } else {
+              // After zoom is complete, highlight based on scroll position
+              activeIndex = Math.min(Math.floor(progress), 3); // Keep within 0-3 range
+            }
 
             navItems.forEach((item, index) => {
               if (index === activeIndex) {
@@ -405,7 +470,10 @@
         x: 0 // Reset position in case of resize
       });
 
-      // Divide the animation into segments with more control
+      // Hide lift nav initially
+      gsap.set(".lift-nav", {
+        autoAlpha: 0
+      });
 
       // 1. Door opening animation
       tl.to(".door-left", {
@@ -419,13 +487,18 @@
         ease: "power1.inOut"
       }, 0)
 
-      // Adding a pause between animations
-      .to({}, {duration: 1}) // Empty tween for pause
+      // IMPORTANT: Make lift nav appear exactly when doors finish opening
+      .to(".lift-nav", {
+        autoAlpha: 1,
+        duration: 0.5,
+        ease: "power1.inOut",
+        onComplete: function() {
+          document.querySelector('.lift-nav').classList.add('visible');
+        }
+      }, "+=0.1") // Small offset after doors finish
 
-      // Make the lift navigation appear immediately after doors open
-      .call(function() {
-        document.querySelector('.lift-nav').classList.add('visible');
-      })
+      // Adding a small pause after navigation appears
+      .to({}, {duration: 0.8})
 
       // 2. Zoom animation
       .to(".image-container img", {
@@ -434,7 +507,7 @@
         duration: 4,
         transformOrigin: "center center",
         ease: "power1.inOut"
-      }, "+=1")
+      }, "+=0.5")
 
       // 3. Section scale animation - coordinated with zoom
       .to(".section:first-child", {
@@ -482,18 +555,6 @@
       // Initialize lift navigation
       const navItems = document.querySelectorAll('.lift-nav-item');
       const liftNav = document.querySelector('.lift-nav');
-
-      // Make sure the lift nav appears explicitly for section1
-      const section1Observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            liftNav.classList.add('visible');
-          }
-        });
-      }, { threshold: 0.1 });
-
-      // Specifically observe section1
-      section1Observer.observe(document.getElementById('section1'));
 
       // Set first nav item as active by default
       navItems[0].classList.add('active');
