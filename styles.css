@@ -20,6 +20,7 @@ body {
   width: 100%;
   height: 100vh;
   display: flex;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
   opacity: 0;
@@ -27,6 +28,8 @@ body {
   transition: opacity 1s ease-out, transform 1s ease-out;
   position: relative;
   padding: 1rem;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .content .section.visible {
@@ -115,30 +118,27 @@ body {
   border-left: 3px solid black;
 }
 
-/* Section layouts */
-.section {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.section dotlottie-player {
-  width: 50%;
-  min-width: 300px;
-  height: auto;
-  max-height: 50vh;
-}
-
+/* Section image styles */
 .section img {
   height: auto;
   width: 40%;
   min-width: 200px;
   max-width: 500px;
   object-fit: contain;
+  position: relative;
+  z-index: 3;
+}
+
+/* Lottie animation containers - updated to be flex items */
+.lottie-container {
+  width: 40%;
+  min-width: 200px;
+  max-width: 500px;
+  height: 400px;
+  position: relative;
+  overflow: hidden;
+  z-index: 3;
+  pointer-events: none;
 }
 
 /* Lift Navigation Styles */
@@ -190,35 +190,40 @@ body {
 @media only screen and (max-width: 480px) {
   .section {
     flex-direction: column;
-    justify-content: flex-start;
-    overflow-y: auto;
+    justify-content: center;
     padding: 70px 15px 20px 15px;
-    height: auto;
-    min-height: 100vh;
-  }
-
-  .section dotlottie-player {
-    width: 100%;
-    min-width: unset;
-    max-height: 45vh;
-    margin-bottom: 20px;
+    height: 100vh;
+    overflow: hidden;
   }
 
   .section img {
-    width: 95%;
+    position: relative;
+    width: 85%;
     min-width: unset;
-    max-width: 100%;
+    max-width: 300px;
+    z-index: 3;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+
+  .lottie-container {
+    width: 85%;
+    min-width: unset;
+    max-width: 300px;
+    height: 300px;
+    margin-bottom: 10px;
   }
 
   .floor-number {
-    width: 45px;
-    height: 45px;
-    font-size: 1.4rem;
-    top: 15px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    top: 10px;
+    border-width: 1px;
   }
 
   .floor-line {
-    top: 37px;
+    top: 30px;
   }
 
   .lift-nav {
@@ -226,11 +231,37 @@ body {
   }
 
   .lift-nav-item {
-    width: 38px;
-    height: 38px;
-    font-size: 1.2rem;
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
     border-width: 2px;
-    gap: 15px;
+    gap: 12px;
+  }
+
+  .elevator-door-container {
+    width: 100%;
+  }
+
+  /* Lottie animations for mobile */
+  #dottie1, #dottie2, #dottie3, #dottie4 {
+    transform: scale(1.2);
+  }
+
+  /* Animation-specific adjustments */
+  #dottie1 {
+    transform: scale(1.2);
+  }
+
+  #dottie2 {
+    transform: scale(1.2);
+  }
+
+  #dottie3 {
+    transform: scale(1.2);
+  }
+
+  #dottie4 {
+    transform: scale(1.2);
   }
 }
 
@@ -240,40 +271,54 @@ body {
     flex-direction: column;
     padding: 80px 20px 30px 20px;
     justify-content: center;
+    align-items: center;
     gap: 30px;
-  }
-
-  .section dotlottie-player {
-    width: 90%;
-    max-height: 45vh;
-    min-width: unset;
+    height: 100vh;
+    overflow: hidden;
   }
 
   .section img {
-    width: 85%;
+    position: relative;
+    width: 80%;
     min-width: unset;
-    max-width: 500px;
+    max-width: 400px;
+    z-index: 3;
+    margin-top: 5px;
+    margin-bottom: 10px;
+  }
+
+  .lottie-container {
+    width: 80%;
+    min-width: unset;
+    max-width: 400px;
+    height: 350px;
+    margin-bottom: 10px;
   }
 
   .lift-nav {
-    left: 20px;
+    left: 15px;
   }
 
   .lift-nav-item {
-    width: 45px;
-    height: 45px;
-    font-size: 1.4rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
   }
 
   .floor-number {
-    width: 55px;
-    height: 55px;
-    font-size: 1.8rem;
-    top: 20px;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    top: 15px;
   }
 
   .floor-line {
-    top: 47px;
+    top: 40px;
+  }
+
+  /* Lottie animations for tablets */
+  #dottie1, #dottie2, #dottie3, #dottie4 {
+    transform: scale(1.1);
   }
 }
 
@@ -284,24 +329,32 @@ body {
     justify-content: center;
     padding: 80px 30px 30px 30px;
     gap: 30px;
+    height: 100vh;
+    overflow: hidden;
   }
 
-  .section dotlottie-player,
   .section img {
+    position: relative;
     width: 45%;
     min-width: unset;
-  }
-
-  .section dotlottie-player {
-    max-height: 50vh;
-  }
-
-  .section img {
     max-width: 450px;
+    z-index: 3;
+  }
+
+  .lottie-container {
+    width: 45%;
+    height: 400px;
+    transform: scale(1);
   }
 
   .lift-nav {
-    left: 25px;
+    left: 20px;
+  }
+
+  .lift-nav-item {
+    width: 45px;
+    height: 45px;
+    font-size: 1.4rem;
   }
 }
 
@@ -315,15 +368,17 @@ body {
     margin: 0 auto;
   }
 
-  .section dotlottie-player {
-    width: 45%;
-    max-width: 650px;
-    max-height: 60vh;
-  }
-
   .section img {
+    position: relative;
     width: 40%;
     max-width: 600px;
+    z-index: 3;
+  }
+
+  .lottie-container {
+    width: 40%;
+    max-width: 600px;
+    height: 450px;
   }
 
   .lift-nav {
@@ -357,15 +412,17 @@ body {
     gap: 50px;
   }
 
-  .section dotlottie-player {
-    max-width: 800px;
-    width: 45%;
-    max-height: 65vh;
-  }
-
   .section img {
     max-width: 750px;
     width: 42%;
+    position: relative;
+    z-index: 3;
+  }
+
+  .lottie-container {
+    max-width: 750px;
+    width: 42%;
+    height: 500px;
   }
 
   .lift-nav {
@@ -398,7 +455,7 @@ body {
   }
 
   .lift-nav {
-    left: A60px;
+    left: 60px;
   }
 
   .lift-nav-item {
@@ -411,33 +468,38 @@ body {
 /* Fix for very small height screens */
 @media only screen and (max-height: 600px) {
   .section {
-    height: auto;
-    min-height: 100vh;
+    height: 100vh;
+    min-height: 500px;
     padding-top: 60px;
-    padding-bottom: 30px;
-    justify-content: flex-start;
-  }
-
-  .section dotlottie-player {
-    max-height: 40vh;
+    justify-content: center;
+    overflow: hidden;
   }
 
   .floor-number {
-    width: 40px;
-    height: 40px;
-    font-size: 1.3rem;
-    top: 15px;
+    width: 35px;
+    height: 35px;
+    font-size: 1.1rem;
+    top: 10px;
   }
 
   .floor-line {
-    top: 35px;
+    top: 27px;
   }
 
   .lift-nav-item {
-    width: 35px;
-    height: 35px;
-    font-size: 1.2rem;
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
     gap: 10px;
+  }
+
+  .section img {
+    max-width: 250px;
+  }
+
+  .lottie-container {
+    max-width: 250px;
+    height: 250px;
   }
 }
 
@@ -447,29 +509,44 @@ body {
     flex-direction: column;
   }
 
-  .section dotlottie-player,
-  .section img {
-    width: 90%;
+  .section img, .lottie-container {
+    width: 80%;
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 }
 
 @media (orientation: landscape) and (max-height: 700px) {
   .section {
     flex-direction: row;
-    padding-top: 70px;
+    padding-top: 50px;
   }
 
-  .section dotlottie-player,
-  .section img {
+  .section img, .lottie-container {
     max-height: 60vh;
-    width: 45%;
+    width: 40%;
+    margin-top: 0;
+  }
+
+  .lottie-container {
+    height: 300px;
   }
 
   .floor-number {
-    top: 15px;
+    top: 10px;
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
   }
 
   .floor-line {
-    top: 37px;
+    top: 25px;
+  }
+
+  .lift-nav-item {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+    gap: 8px;
   }
 }

@@ -9,9 +9,9 @@
   <script src="https://unpkg.com/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/gsap@3.12.7/dist/ScrollToPlugin.min.js"></script>
   <!-- Lottie Player -->
-  <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
   <!-- Styles -->
-   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <!-- Lift Navigation -->
@@ -29,36 +29,97 @@
         <div class="floor-line"></div>
         <div class="floor-number">1</div>
 
+        <!-- Elevator door container -->
         <div class="elevator-door-container">
           <div class="door-left"></div>
           <div class="door-right"></div>
         </div>
+
+        <!-- Image content -->
         <img src="Artboard 221@4x.png" alt="Artboard 7">
-        <dotlottie-player src="https://lottie.host/b819d221-150e-4051-8d33-58c33707e552/s9JUEeLPKf.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
+
+        <!-- Lottie animation container moved next to image -->
+        <div id="dottie1" class="lottie-container"></div>
+
+        <!-- Lottie script -->
+        <script>
+          lottie.loadAnimation({
+            container: document.getElementById("dottie1"),
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: "./jsons/piso1.json"
+          });
+        </script>
       </section>
+
       <section id="section2" class="section">
         <!-- Floor number indicator -->
         <div class="floor-line"></div>
         <div class="floor-number">2</div>
+        <!-- Lottie animation container moved next to image -->
+        <div id="dottie2" class="lottie-container"></div>
 
-        <dotlottie-player src="https://lottie.host/25d43b81-4abf-47ae-9215-5e4eefd0872d/NOCMfYflV4.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
+        <!-- Image content -->
         <img src="2@4x.png" alt="">
+
+
+        <!-- Lottie script -->
+        <script>
+          lottie.loadAnimation({
+            container: document.getElementById("dottie2"),
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: "./jsons/piso2.json"
+          });
+        </script>
       </section>
+
       <section id="section3" class="section">
         <!-- Floor number indicator -->
         <div class="floor-line"></div>
         <div class="floor-number">3</div>
 
+        <!-- Image content -->
         <img src="Artboard 231@4x.png" alt="Artboard 9">
-        <dotlottie-player src="https://lottie.host/b65689a2-b35c-46f1-b12e-7816392fce62/2k3XNk5MpJ.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
+
+        <!-- Lottie animation container moved next to image -->
+        <div id="dottie3" class="lottie-container"></div>
+
+        <!-- Lottie script -->
+        <script>
+          lottie.loadAnimation({
+            container: document.getElementById("dottie3"),
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: "./jsons/piso3.json"
+          });
+        </script>
       </section>
+
       <section id="section4" class="section">
         <!-- Floor number indicator -->
         <div class="floor-line"></div>
         <div class="floor-number">4</div>
+        <!-- Lottie animation container moved next to image -->
+        <div id="dottie4" class="lottie-container"></div>
 
-        <dotlottie-player src="https://lottie.host/605399ae-490a-474d-9f7b-a47762e01f74/b622o8dMwT.lottie" background="transparent" speed="1" loop autoplay></dotlottie-player>
+        <!-- Image content (moved above lottie) -->
         <img src="Artboard 20.svg" alt="">
+
+
+        <!-- Lottie script -->
+        <script>
+          lottie.loadAnimation({
+            container: document.getElementById("dottie4"),
+            renderer: "svg",
+            loop: true,
+            autoplay: true,
+            path: "./jsons/piso4.json"
+          });
+        </script>
       </section>
     </div>
 
