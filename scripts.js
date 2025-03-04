@@ -82,31 +82,8 @@ document.addEventListener("DOMContentLoaded", function() {
         pin: true,
         scrub: scrubSpeed, // Faster scrub for mobile
         invalidateOnRefresh: true,
-        id: "scrolltrigger-main",
-        onUpdate: function(self) {
-          // Update active navigation based on scroll position
-          const navItems = document.querySelectorAll('.lift-nav-item');
-          const progress = self.progress * 4; // Scale to 0-4 range for four sections
-
-          let activeIndex;
-          if (progress < 1.0) {
-            activeIndex = 0;
-          } else if (progress < 2.0) {
-            activeIndex = 1;
-          } else if (progress < 3.0) {
-            activeIndex = 2;
-          } else {
-            activeIndex = 3;
-          }
-
-          navItems.forEach((item, index) => {
-            if (index === activeIndex) {
-              item.classList.add('active');
-            } else {
-              item.classList.remove('active');
-            }
-          });
-        }
+        id: "scrolltrigger-main"
+        // Removed the onUpdate function that was controlling active navigation based on scroll
       }
     });
 
@@ -229,32 +206,107 @@ document.addEventListener("DOMContentLoaded", function() {
       const targetSection = this.getAttribute('data-section');
       const sectionIndex = parseInt(targetSection.replace('section', '')) - 1;
 
-      // Calculate position based on the animation timeline
-      const scrollTrigger = ScrollTrigger.getById('scrolltrigger-main');
+      // Update active state for nav items
+      navItems.forEach(nav => nav.classList.remove('active'));
+      this.classList.add('active');
 
+      // Hide all sections first
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('visible');
+      });
+
+      // Show only the target section
+      const section = document.getElementById(targetSection);
+      if (section) {
+        section.classList.add('visible');
+      }
+
+      // Ensure the corresponding dottie is visible
+      const dottieId = `dottie${sectionIndex + 1}`;
+      const dottie = document.getElementById(dottieId);
+
+      if (dottie) {
+        // Make sure the dottie's parent section is visible
+        dottie.closest('.section').classList.add('visible');
+
+        // Scroll to the section to ensure it's in view
+        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // If ScrollTrigger is available, use it for smoother scrolling
+      const scrollTrigger = ScrollTrigger.getById('scrolltrigger-main');
       if (scrollTrigger) {
         // Calculate precise progress for each section
         const progress = sectionIndex / 3; // Normalize to 0-1 (for 4 sections)
         const scrollPosition = scrollTrigger.start + (progress * (scrollTrigger.end - scrollTrigger.start));
 
-        // Scroll to position - faster for mobile
+        // Scroll to position with GSAP
         const isMobile = window.innerWidth <= 768;
         gsap.to(window, {
           scrollTo: scrollPosition,
-          duration: isMobile ? 0.5 : 0.8, // Faster for mobile
-          ease: "power2.inOut"
+          duration: isMobile ? 0.5 : 0.8,
+          ease: "power2.inOut",
+          onComplete: function() {
+            // Ensure the target section is visible after scrolling
+            document.querySelectorAll('.section').forEach(s => {
+              s.classList.remove('visible');
+            });
+            section.classList.add('visible');
+          }
         });
-      } else {
-        // Fallback if ScrollTrigger isn't working
-        const section = document.getElementById(targetSection);
-        if (section) {
-          section.scrollIntoView({ behavior: 'smooth' });
-        }
       }
-
-      // Update active state
-      navItems.forEach(nav => nav.classList.remove('active'));
-      this.classList.add('active');
     });
   });
+
+  // Use only the LottieObserver for active navigation
+  const lottieObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+        // Get the dottie number from the ID (e.g., "dottie1" → 1)
+        const dottieId = entry.target.id;
+        const dottieNumber = parseInt(dottieId.replace('dottie', ''));
+
+        // Update the navigation to match the visible dottie
+        const navItems = document.querySelectorAll('.lift-nav-item');
+        navItems.forEach((item, index) => {
+          if (index === dottieNumber - 1) {
+            item.classList.add('active');
+          } else {
+            item.classList.remove('active');
+          }
+        });
+      }
+    });
+  }, { threshold: [0.5] }); // Trigger when Lottie is 50% visible
+
+  // Observe all Lottie containers
+  document.querySelectorAll('.lottie-container').forEach(lottie => {
+    lottieObserver.observe(lottie);
+  });
+  // Handle arrow container visibility on scroll
+const arrowContainer = document.getElementById('arrow-container');
+
+// Show arrow on page load
+if (arrowContainer) {
+  arrowContainer.style.opacity = '1';
+}
+
+// Hide arrow on scroll
+let scrollTimer;
+window.addEventListener('scroll', function() {
+  if (arrowContainer) {
+    // Hide the arrow container
+    arrowContainer.style.opacity = '0';
+
+    // Clear any existing timers
+    clearTimeout(scrollTimer);
+
+    // If the user returns to the top of the page, show the arrow again
+    if (window.scrollY <= 100) {
+      scrollTimer = setTimeout(function() {
+        arrowContainer.style.opacity = '1';
+      }, 1000);
+    }
+  }
+});
 });
