@@ -209,6 +209,74 @@ body {
   letter-spacing: 1px;
 }
 
+[class*=curtain] {
+  position: fixed;
+  height: 100px;
+  margin: 5vh;
+  padding: 1vw;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+}
+
+[class*=curtain]::after,
+[class*=curtain]::before {
+  content: '';
+  background-color: white;
+  position: absolute;
+  transition-duration: 0.5s;
+  border: 2px solid black;
+}
+
+[class*=curtain]:hover:after,
+[class*=curtain]:hover:before {
+  opacity: 0;
+}
+
+.curtain-0::after,
+.curtain-0::before {
+  height: 100%;
+  width: 50%;
+}
+
+.curtain-1::after,
+.curtain-1::before {
+  height: 50%;
+  width: 100%;
+}
+
+.curtain-0::after {
+  right: 0;
+  transform-origin: right;
+  border-right: 3px solid black;
+}
+
+.curtain-0::before {
+  left: 0;
+  transform-origin: left;
+  border-right: 3px solid black;
+}
+
+.curtain-0:hover:after,
+.curtain-0:hover:before {
+  transform: scaleX(0);
+}
+
+.curtain-1::after {
+  bottom: 0;
+  transform-origin: bottom;
+}
+
+.curtain-1::before {
+  top: 0;
+  transform-origin: top;
+}
+
+.curtain-1:hover:after,
+.curtain-1:hover:before {
+  transform: scaleY(0);
+}
+
 /* MOBILE STYLES - Small phones */
 @media only screen and (max-width: 480px) {
   .section {

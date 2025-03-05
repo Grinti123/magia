@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
+
   // Check if GSAP is available
   if (typeof gsap === 'undefined') {
     console.error("GSAP library not loaded. Using fallback functionality.");
@@ -31,8 +32,87 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Add simple navigation functionality
     const navItems = document.querySelectorAll('.lift-nav-item');
-    const sections = document.querySelectorAll('.section');
 
+    // Set first nav item as active by default
+    navItems[0].classList.add('active');
+
+// Adjust navigation click behavior for door transition
+navItems.forEach(item => {
+  item.addEventListener('click', function() {
+    const targetSection = this.getAttribute('data-section');
+    const sectionIndex = parseInt(targetSection.replace('section', '')) - 1;
+
+    // Update active state for nav items
+    navItems.forEach(nav => nav.classList.remove('active'));
+    this.classList.add('active');
+
+    // Function to close current section's doors
+    function closeDoors(section) {
+      return new Promise(resolve => {
+        section.classList.remove('visible');
+
+        // Trigger door closing animation
+        setTimeout(() => {
+          resolve();
+        }, 800); // Match the CSS transition duration
+      });
+    }
+
+    // Function to open target section's doors
+    function openDoors(section) {
+      return new Promise(resolve => {
+        // Slight delay to ensure previous section is closed
+        setTimeout(() => {
+          section.classList.add('visible');
+          resolve();
+        }, 200);
+      });
+    }
+
+    // Get current and target sections
+    const currentSection = document.querySelector('.section.visible');
+    const section = document.getElementById(targetSection);
+
+    // Sequence the door transitions
+    if (currentSection && currentSection !== section) {
+      closeDoors(currentSection).then(() => {
+        openDoors(section);
+      });
+    } else if (!currentSection) {
+      // If no section is currently visible, just open the target section
+      openDoors(section);
+    }
+
+    // Ensure the corresponding dottie is visible
+    const dottieId = `dottie${sectionIndex + 1}`;
+    const dottie = document.getElementById(dottieId);
+
+    if (dottie) {
+      dottie.closest('.section').classList.add('visible');
+
+      // Scroll to the section to ensure it's in view
+      section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // If ScrollTrigger is available, use it for smoother scrolling
+    const scrollTrigger = ScrollTrigger.getById('scrolltrigger-main');
+    if (scrollTrigger) {
+      // Calculate precise progress for each section
+      const progress = sectionIndex / 3; // Normalize to 0-1 (for 4 sections)
+      const scrollPosition = scrollTrigger.start + (progress * (scrollTrigger.end - scrollTrigger.start));
+
+      // Scroll to position with GSAP
+      const isMobile = window.innerWidth <= 768;
+      gsap.to(window, {
+        scrollTo: scrollPosition,
+        duration: isMobile ? 0.5 : 0.8,
+        ease: "power2.inOut"
+      });
+    }
+  });
+});
+
+    const sections = document.querySelectorAll('.section');
     navItems.forEach((item, index) => {
       if (index === 0) item.classList.add('active');
 
@@ -310,3 +390,4 @@ window.addEventListener('scroll', function() {
   }
 });
 });
+
