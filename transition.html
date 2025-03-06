@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lift Door Transition - Static Scene Change</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden; /* Prevent scrolling */
+            background: black;
+            color: white;
+        }
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            transition: background 0.5s ease-in-out;
+        }
+        .doors {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 2;
+        }
+        .door {
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, #444, #222);
+            position: absolute;
+            transition: transform 1s ease-in-out;
+        }
+        .left-door { left: 0; }
+        .right-door { right: 0; }
+        .closed .left-door { transform: translateX(0); }
+        .closed .right-door { transform: translateX(0); }
+        .open .left-door { transform: translateX(-100%); }
+        .open .right-door { transform: translateX(100%); }
+        .btn-next {
+            position: absolute;
+            bottom: 20px;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background: white;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            z-index: 3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container closed" id="scene">
+    <div class="doors">
+        <div class="door left-door"></div>
+        <div class="door right-door"></div>
+    </div>
+    <div class="content" id="content">Section 1 - Welcome</div>
+    <button class="btn-next" id="nextBtn">Next</button>
+</div>
+
+<script>
+    const sections = [
+        { text: "Section 1 - Welcome", color: "black" },
+        { text: "Section 2 - About", color: "yellow" },
+        { text: "Section 3 - Services", color: "blue" },
+        { text: "Section 4 - Contact", color: "green" }
+    ];
+
+    let currentIndex = 0;
+    const scene = document.getElementById("scene");
+    const content = document.getElementById("content");
+    const nextBtn = document.getElementById("nextBtn");
+
+    nextBtn.addEventListener("click", () => {
+        // Close doors
+        scene.classList.remove("open");
+        scene.classList.add("closed");
+
+        // Wait for doors to fully close before changing content
+        setTimeout(() => {
+            currentIndex = (currentIndex + 1) % sections.length;
+            content.innerHTML = sections[currentIndex].text;
+            scene.style.background = sections[currentIndex].color;
+        }, 1000);
+
+        // Open doors after content changes
+        setTimeout(() => {
+            scene.classList.remove("closed");
+            scene.classList.add("open");
+        }, 2000);
+    });
+
+    // Open doors on first load
+    window.onload = () => {
+        setTimeout(() => scene.classList.add("open"), 500);
+    };
+</script>
+
+</body>
+</html>

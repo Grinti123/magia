@@ -189,6 +189,26 @@ document.addEventListener("DOMContentLoaded", function() {
   // Initialize animation
   initScrollAnimation();
 
+  // Initial door animation function
+  function initialDoorAnimation() {
+    const doorLeft = document.querySelector('.door-left');
+    const doorRight = document.querySelector('.door-right');
+
+    if (doorLeft && doorRight) {
+      // First make sure doors are closed
+      gsap.set([doorLeft, doorRight], { x: "0%" });
+
+      // Then animate them open after a delay
+      setTimeout(() => {
+        gsap.to(doorLeft, { x: "-100%", duration: 0.8, ease: "power2.out" });
+        gsap.to(doorRight, { x: "100%", duration: 0.8, ease: "power2.out" });
+      }, 800);
+    }
+  }
+
+  // Call the initial door animation
+  initialDoorAnimation();
+
   // Reinitialize on window resize with debounce
   let resizeTimer;
   window.addEventListener("resize", function() {
@@ -227,7 +247,7 @@ document.addEventListener("DOMContentLoaded", function() {
             gsap.to(doorRight, { x: "0%", duration: 0.5, ease: "power2.out" });
           }
 
-          // Allow time for door animation
+          // Allow time for door animation to complete
           setTimeout(resolve, 600);
         });
       }
@@ -243,11 +263,7 @@ document.addEventListener("DOMContentLoaded", function() {
             gsap.to(doorRight, { x: "100%", duration: 0.5, ease: "power2.out" });
           }
 
-          // Make sure the corresponding dottie is properly shown
-          const dottieId = `dottie${sectionIndex + 1}`;
-          const dottie = document.getElementById(dottieId);
-
-          resolve();
+          setTimeout(resolve, 600);
         });
       }
 
@@ -265,10 +281,14 @@ document.addEventListener("DOMContentLoaded", function() {
           // Set the scroll position with GSAP
           gsap.to(window, {
             scrollTo: scrollPosition,
-            duration: 0.8,
+            duration: 1,
             ease: "power2.inOut",
             onComplete: function() {
-              openDoors();
+              // Check if the section is fully visible before opening doors
+              setTimeout(() => {
+                openDoors();
+              }, 300);
+
               // Force a refresh to ensure everything is in sync
               ScrollTrigger.refresh();
             }
@@ -276,10 +296,38 @@ document.addEventListener("DOMContentLoaded", function() {
         } else {
           // Fallback if ScrollTrigger is not available
           targetSectionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          setTimeout(openDoors, 500);
+          setTimeout(() => {
+            openDoors();
+          }, 1000);
         }
       });
     });
+  });
+
+  // Add section observer to detect when sections become fully visible
+  const sectionObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && entry.intersectionRatio > 0.8) {
+        const sectionId = entry.target.id;
+        const sectionNumber = parseInt(sectionId.replace('section', ''));
+
+        // Update navigation
+        navItems.forEach((item, index) => {
+          if (index === sectionNumber - 1) {
+            item.classList.add('active');
+          } else {
+            item.classList.remove('active');
+          }
+        });
+
+        // Door animation is already handled by the lift navigation
+      }
+    });
+  }, { threshold: [0.8] }); // Trigger when section is 80% visible
+
+  // Observe all sections
+  document.querySelectorAll('.section').forEach(section => {
+    sectionObserver.observe(section);
   });
 
   // Use only the LottieObserver for active navigation
@@ -334,4 +382,48 @@ document.addEventListener("DOMContentLoaded", function() {
       }
     }
   });
+
+  // Add scroll detection for automatic door animation during manual scrolling
+  let lastScrollTop = 0;
+  let scrollTimeout;
+  let isAnimatingDoors = false;
+
+  window.addEventListener('scroll', function() {
+    clearTimeout(scrollTimeout);
+
+    // Don't process if doors are currently animating
+    if (isAnimatingDoors) return;
+
+    const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollDistance = Math.abs(currentScrollTop - lastScrollTop);
+
+    // Only trigger for significant scroll movements
+    if (scrollDistance > 50) {
+      isAnimatingDoors = true;
+
+      // Close doors on scroll
+      const doorLeft = document.querySelector('.door-left');
+      const doorRight = document.querySelector('.door-right');
+
+      if (doorLeft && doorRight) {
+        gsap.to(doorLeft, { x: "0%", duration: 0.4, ease: "power2.out" });
+        gsap.to(doorRight, { x: "0%", duration: 0.4, ease: "power2.out" });
+      }
+
+      // Wait a bit, then open doors again
+      scrollTimeout = setTimeout(() => {
+        if (doorLeft && doorRight) {
+          gsap.to(doorLeft, { x: "-100%", duration: 0.4, ease: "power2.out" });
+          gsap.to(doorRight, { x: "100%", duration: 0.4, ease: "power2.out" });
+        }
+
+        // Reset the animation flag after animation completes
+        setTimeout(() => {
+          isAnimatingDoors = false;
+        }, 500);
+      }, 600);
+    }
+
+    lastScrollTop = currentScrollTop;
+  }, { passive: true });
 });
