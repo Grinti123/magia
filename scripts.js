@@ -4,9 +4,6 @@ document.addEventListener("DOMContentLoaded", function() {
   if (typeof gsap === 'undefined') {
     console.error("GSAP library not loaded. Using fallback functionality.");
 
-    // Show the first section
-    document.getElementById('section1').classList.add('visible');
-
     // Show the navigation
     const liftNav = document.querySelector('.lift-nav');
     liftNav.style.opacity = 1;
@@ -36,97 +33,64 @@ document.addEventListener("DOMContentLoaded", function() {
     // Set first nav item as active by default
     navItems[0].classList.add('active');
 
-// Adjust navigation click behavior for door transition
-navItems.forEach(item => {
-  item.addEventListener('click', function() {
-    const targetSection = this.getAttribute('data-section');
-    const sectionIndex = parseInt(targetSection.replace('section', '')) - 1;
-
-    // Update active state for nav items
-    navItems.forEach(nav => nav.classList.remove('active'));
-    this.classList.add('active');
-
-    // Function to close current section's doors
-    function closeDoors(section) {
-      return new Promise(resolve => {
-        section.classList.remove('visible');
-
-        // Trigger door closing animation
-        setTimeout(() => {
-          resolve();
-        }, 800); // Match the CSS transition duration
-      });
-    }
-
-    // Function to open target section's doors
-    function openDoors(section) {
-      return new Promise(resolve => {
-        // Slight delay to ensure previous section is closed
-        setTimeout(() => {
-          section.classList.add('visible');
-          resolve();
-        }, 200);
-      });
-    }
-
-    // Get current and target sections
-    const currentSection = document.querySelector('.section.visible');
-    const section = document.getElementById(targetSection);
-
-    // Sequence the door transitions
-    if (currentSection && currentSection !== section) {
-      closeDoors(currentSection).then(() => {
-        openDoors(section);
-      });
-    } else if (!currentSection) {
-      // If no section is currently visible, just open the target section
-      openDoors(section);
-    }
-
-    // Ensure the corresponding dottie is visible
-    const dottieId = `dottie${sectionIndex + 1}`;
-    const dottie = document.getElementById(dottieId);
-
-    if (dottie) {
-      dottie.closest('.section').classList.add('visible');
-
-      // Scroll to the section to ensure it's in view
-      section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    // If ScrollTrigger is available, use it for smoother scrolling
-    const scrollTrigger = ScrollTrigger.getById('scrolltrigger-main');
-    if (scrollTrigger) {
-      // Calculate precise progress for each section
-      const progress = sectionIndex / 3; // Normalize to 0-1 (for 4 sections)
-      const scrollPosition = scrollTrigger.start + (progress * (scrollTrigger.end - scrollTrigger.start));
-
-      // Scroll to position with GSAP
-      const isMobile = window.innerWidth <= 768;
-      gsap.to(window, {
-        scrollTo: scrollPosition,
-        duration: isMobile ? 0.5 : 0.8,
-        ease: "power2.inOut"
-      });
-    }
-  });
-});
-
-    const sections = document.querySelectorAll('.section');
-    navItems.forEach((item, index) => {
-      if (index === 0) item.classList.add('active');
-
+    // Adjust navigation click behavior for door transition
+    navItems.forEach(item => {
       item.addEventListener('click', function() {
-        // Hide all sections
-        sections.forEach(section => section.classList.remove('visible'));
+        const targetSection = this.getAttribute('data-section');
+        const sectionIndex = parseInt(targetSection.replace('section', '')) - 1;
 
-        // Show the clicked section
-        const targetId = this.getAttribute('data-section');
-        document.getElementById(targetId).classList.add('visible');
-
-        // Update active state
+        // Update active state for nav items
         navItems.forEach(nav => nav.classList.remove('active'));
         this.classList.add('active');
+
+        // Function to close current section's doors
+        function closeDoors() {
+          return new Promise(resolve => {
+            // Close the doors
+            const doorLeft = document.querySelector('.door-left');
+            const doorRight = document.querySelector('.door-right');
+
+            if (doorLeft && doorRight) {
+              doorLeft.style.transform = 'translateX(0)';
+              doorRight.style.transform = 'translateX(0)';
+            }
+
+            // Trigger door closing animation
+            setTimeout(() => {
+              resolve();
+            }, 800); // Match the CSS transition duration
+          });
+        }
+
+        // Function to open target section's doors
+        function openDoors(section) {
+          return new Promise(resolve => {
+            // Slight delay to ensure previous section is closed
+            setTimeout(() => {
+              // Open the doors
+              const doorLeft = document.querySelector('.door-left');
+              const doorRight = document.querySelector('.door-right');
+
+              if (doorLeft && doorRight) {
+                doorLeft.style.transform = 'translateX(-100%)';
+                doorRight.style.transform = 'translateX(100%)';
+              }
+
+              resolve();
+            }, 200);
+          });
+        }
+
+        // Get target section
+        const section = document.getElementById(targetSection);
+
+        // Sequence the door transitions
+        closeDoors().then(() => {
+          section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(() => {
+            openDoors(section);
+          }, 500);
+        });
       });
     });
 
@@ -163,7 +127,6 @@ navItems.forEach(item => {
         scrub: scrubSpeed, // Faster scrub for mobile
         invalidateOnRefresh: true,
         id: "scrolltrigger-main"
-        // Removed the onUpdate function that was controlling active navigation based on scroll
       }
     });
 
@@ -182,28 +145,18 @@ navItems.forEach(item => {
     const doorDuration = isMobile ? 1 : 2;
     const zoomDuration = isMobile ? 1 : 2;
 
-    // Show the navigation first
-    tl.to(".lift-nav", {
-      autoAlpha: 1,
-      duration: 0.3,
-      ease: "power1.inOut",
-      onComplete: function() {
-        document.querySelector('.lift-nav').classList.add('visible');
-      }
-    }, 0)
-
     // Door and zoom animations start simultaneously
-    .to(".door-left", {
+    tl.to(".door-left", {
       x: "-100%",
       duration: doorDuration,
       ease: "power2.out"
-    }, 0.3) // Start after nav appears
+    }, 0) // Start immediately
 
     .to(".door-right", {
       x: "100%",
       duration: doorDuration,
       ease: "power2.out"
-    }, 0.3) // Start at the same time as door-left
+    }, 0) // Start at the same time as door-left
 
     // Zoom animation starts simultaneously with the doors
     .to(".image-container img", {
@@ -212,7 +165,7 @@ navItems.forEach(item => {
       duration: zoomDuration, // Same duration as doors
       transformOrigin: "center center",
       ease: "power2.out"
-    }, 0.3) // Start at the same time as doors
+    }, 0) // Start at the same time as doors
 
     // Section scale animation - coordinated with zoom
     .to(".section:first-child", {
@@ -220,16 +173,21 @@ navItems.forEach(item => {
       duration: zoomDuration, // Match zoom duration
       transformOrigin: "center center",
       ease: "power2.out"
-    }, 0.3); // Start at the same time as doors and zoom
+    }, 0) // Start at the same time as doors and zoom
+
+    // Move the lift-nav animation to appear AFTER the door and zoom animations
+    .to(".lift-nav", {
+      autoAlpha: 1,
+      duration: 0.3,
+      ease: "power1.inOut",
+      onComplete: function() {
+        document.querySelector('.lift-nav').classList.add('visible');
+      }
+    }, doorDuration); // Start after the doors and zoom finish
   }
 
   // Initialize animation
   initScrollAnimation();
-
-  // Force the section1 to be visible after a short delay
-  setTimeout(function() {
-    document.getElementById('section1').classList.add('visible');
-  }, 500);
 
   // Reinitialize on window resize with debounce
   let resizeTimer;
@@ -237,42 +195,8 @@ navItems.forEach(item => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function() {
       initScrollAnimation();
-
-      // Ensure current section remains visible after resize
-      const sections = document.querySelectorAll(".section");
-      sections.forEach(section => {
-        if (isElementInViewport(section)) {
-          section.classList.add("visible");
-        }
-      });
     }, 250);
   });
-
-  // Utility function to check if element is in viewport
-  function isElementInViewport(el) {
-    const rect = el.getBoundingClientRect();
-    return (
-      rect.top >= 0 &&
-      rect.left >= 0 &&
-      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-    );
-  }
-
-  // Create observer for sections for general visibility
-  const sectionsObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        setTimeout(() => {
-          entry.target.classList.add("visible");
-        }, 300);
-      }
-    });
-  }, { threshold: 0.1 });
-
-  // Observe all sections
-  const sections = document.querySelectorAll(".section");
-  sections.forEach(section => sectionsObserver.observe(section));
 
   // Initialize lift navigation
   const navItems = document.querySelectorAll('.lift-nav-item');
@@ -280,61 +204,81 @@ navItems.forEach(item => {
   // Set first nav item as active by default
   navItems[0].classList.add('active');
 
-  // Adjust navigation click behavior for faster response
+  // UPDATED LIFT NAVIGATION FUNCTIONALITY
   navItems.forEach(item => {
     item.addEventListener('click', function() {
       const targetSection = this.getAttribute('data-section');
       const sectionIndex = parseInt(targetSection.replace('section', '')) - 1;
+      const targetSectionElement = document.getElementById(targetSection);
 
       // Update active state for nav items
       navItems.forEach(nav => nav.classList.remove('active'));
       this.classList.add('active');
 
-      // Hide all sections first
-      document.querySelectorAll('.section').forEach(section => {
-        section.classList.remove('visible');
-      });
+      // Function to close doors
+      function closeDoors() {
+        return new Promise(resolve => {
+          // Close the doors
+          const doorLeft = document.querySelector('.door-left');
+          const doorRight = document.querySelector('.door-right');
 
-      // Show only the target section
-      const section = document.getElementById(targetSection);
-      if (section) {
-        section.classList.add('visible');
-      }
-
-      // Ensure the corresponding dottie is visible
-      const dottieId = `dottie${sectionIndex + 1}`;
-      const dottie = document.getElementById(dottieId);
-
-      if (dottie) {
-        // Make sure the dottie's parent section is visible
-        dottie.closest('.section').classList.add('visible');
-
-        // Scroll to the section to ensure it's in view
-        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-
-      // If ScrollTrigger is available, use it for smoother scrolling
-      const scrollTrigger = ScrollTrigger.getById('scrolltrigger-main');
-      if (scrollTrigger) {
-        // Calculate precise progress for each section
-        const progress = sectionIndex / 3; // Normalize to 0-1 (for 4 sections)
-        const scrollPosition = scrollTrigger.start + (progress * (scrollTrigger.end - scrollTrigger.start));
-
-        // Scroll to position with GSAP
-        const isMobile = window.innerWidth <= 768;
-        gsap.to(window, {
-          scrollTo: scrollPosition,
-          duration: isMobile ? 0.5 : 0.8,
-          ease: "power2.inOut",
-          onComplete: function() {
-            // Ensure the target section is visible after scrolling
-            document.querySelectorAll('.section').forEach(s => {
-              s.classList.remove('visible');
-            });
-            section.classList.add('visible');
+          if (doorLeft && doorRight) {
+            gsap.to(doorLeft, { x: "0%", duration: 0.5, ease: "power2.out" });
+            gsap.to(doorRight, { x: "0%", duration: 0.5, ease: "power2.out" });
           }
+
+          // Allow time for door animation
+          setTimeout(resolve, 600);
         });
       }
+
+      // Function to open doors
+      function openDoors() {
+        return new Promise(resolve => {
+          const doorLeft = document.querySelector('.door-left');
+          const doorRight = document.querySelector('.door-right');
+
+          if (doorLeft && doorRight) {
+            gsap.to(doorLeft, { x: "-100%", duration: 0.5, ease: "power2.out" });
+            gsap.to(doorRight, { x: "100%", duration: 0.5, ease: "power2.out" });
+          }
+
+          // Make sure the corresponding dottie is properly shown
+          const dottieId = `dottie${sectionIndex + 1}`;
+          const dottie = document.getElementById(dottieId);
+
+          resolve();
+        });
+      }
+
+      // Execute navigation with door animations
+      closeDoors().then(() => {
+        // Get the ScrollTrigger instance
+        const scrollTrigger = ScrollTrigger.getById('scrolltrigger-main');
+        if (scrollTrigger) {
+          // Calculate the exact progress based on section index
+          const progress = sectionIndex / 3; // For 4 sections
+
+          // Calculate the scroll position
+          const scrollPosition = scrollTrigger.start + (progress * (scrollTrigger.end - scrollTrigger.start));
+
+          // Set the scroll position with GSAP
+          gsap.to(window, {
+            scrollTo: scrollPosition,
+            duration: 0.8,
+            ease: "power2.inOut",
+            onComplete: function() {
+              openDoors();
+              // Force a refresh to ensure everything is in sync
+              ScrollTrigger.refresh();
+            }
+          });
+        } else {
+          // Fallback if ScrollTrigger is not available
+          targetSectionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          setTimeout(openDoors, 500);
+        }
+      });
     });
   });
 
@@ -363,31 +307,31 @@ navItems.forEach(item => {
   document.querySelectorAll('.lottie-container').forEach(lottie => {
     lottieObserver.observe(lottie);
   });
+
   // Handle arrow container visibility on scroll
-const arrowContainer = document.getElementById('arrow-container');
+  const arrowContainer = document.getElementById('arrow-container');
 
-// Show arrow on page load
-if (arrowContainer) {
-  arrowContainer.style.opacity = '1';
-}
-
-// Hide arrow on scroll
-let scrollTimer;
-window.addEventListener('scroll', function() {
+  // Show arrow on page load
   if (arrowContainer) {
-    // Hide the arrow container
-    arrowContainer.style.opacity = '0';
-
-    // Clear any existing timers
-    clearTimeout(scrollTimer);
-
-    // If the user returns to the top of the page, show the arrow again
-    if (window.scrollY <= 100) {
-      scrollTimer = setTimeout(function() {
-        arrowContainer.style.opacity = '1';
-      }, 1000);
-    }
+    arrowContainer.style.opacity = '1';
   }
-});
-});
 
+  // Hide arrow on scroll
+  let scrollTimer;
+  window.addEventListener('scroll', function() {
+    if (arrowContainer) {
+      // Hide the arrow container
+      arrowContainer.style.opacity = '0';
+
+      // Clear any existing timers
+      clearTimeout(scrollTimer);
+
+      // If the user returns to the top of the page, show the arrow again
+      if (window.scrollY <= 100) {
+        scrollTimer = setTimeout(function() {
+          arrowContainer.style.opacity = '1';
+        }, 1000);
+      }
+    }
+  });
+});

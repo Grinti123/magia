@@ -23,19 +23,16 @@ body {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-  opacity: 0;
-  transform: translateY(50px);
-  transition: opacity 1s ease-out, transform 1s ease-out;
   position: relative;
   padding: 1rem;
   gap: 20px;
   flex-wrap: wrap;
 }
 
-.content .section.visible {
+/* .content .section.visible {
   opacity: 1;
   transform: translateY(0);
-}
+} */
 
 /* Floor number indicator */
 .floor-number {
@@ -210,13 +207,13 @@ body {
 }
 
 [class*=curtain] {
-  position: fixed;
+  position: absolute;
   height: 100px;
   margin: 5vh;
-  padding: 1vw;
+  padding: 0vw;
   width: 100%;
   height: 100%;
-  z-index: 1000;
+  z-index: 6;
 }
 
 [class*=curtain]::after,
