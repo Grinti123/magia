@@ -126,7 +126,35 @@ document.addEventListener("DOMContentLoaded", function() {
         pin: true,
         scrub: scrubSpeed, // Faster scrub for mobile
         invalidateOnRefresh: true,
+<<<<<<< HEAD
         id: "scrolltrigger-main"
+=======
+        id: "scrolltrigger-main",
+        onUpdate: function(self) {
+          // Update active navigation based on scroll position
+          const navItems = document.querySelectorAll('.lift-nav-item');
+          const progress = self.progress * 4; // Scale to 0-4 range for four sections
+
+          let activeIndex;
+          if (progress < 1.0) {
+            activeIndex = 0;
+          } else if (progress < 2.0) {
+            activeIndex = 1;
+          } else if (progress < 3.0) {
+            activeIndex = 2;
+          } else {
+            activeIndex = 3;
+          }
+
+          navItems.forEach((item, index) => {
+            if (index === activeIndex) {
+              item.classList.add('active');
+            } else {
+              item.classList.remove('active');
+            }
+          });
+        }
+>>>>>>> parent of b454c29 (other update)
       }
     });
 
@@ -231,6 +259,7 @@ document.addEventListener("DOMContentLoaded", function() {
       const sectionIndex = parseInt(targetSection.replace('section', '')) - 1;
       const targetSectionElement = document.getElementById(targetSection);
 
+<<<<<<< HEAD
       // Update active state for nav items
       navItems.forEach(nav => nav.classList.remove('active'));
       this.classList.add('active');
@@ -249,9 +278,32 @@ document.addEventListener("DOMContentLoaded", function() {
 
           // Allow time for door animation to complete
           setTimeout(resolve, 600);
+=======
+      // Calculate position based on the animation timeline
+      const scrollTrigger = ScrollTrigger.getById('scrolltrigger-main');
+
+      if (scrollTrigger) {
+        // Calculate precise progress for each section
+        const progress = sectionIndex / 3; // Normalize to 0-1 (for 4 sections)
+        const scrollPosition = scrollTrigger.start + (progress * (scrollTrigger.end - scrollTrigger.start));
+
+        // Scroll to position - faster for mobile
+        const isMobile = window.innerWidth <= 768;
+        gsap.to(window, {
+          scrollTo: scrollPosition,
+          duration: isMobile ? 0.5 : 0.8, // Faster for mobile
+          ease: "power2.inOut"
+>>>>>>> parent of b454c29 (other update)
         });
+      } else {
+        // Fallback if ScrollTrigger isn't working
+        const section = document.getElementById(targetSection);
+        if (section) {
+          section.scrollIntoView({ behavior: 'smooth' });
+        }
       }
 
+<<<<<<< HEAD
       // Function to open doors
       function openDoors() {
         return new Promise(resolve => {
@@ -426,4 +478,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     lastScrollTop = currentScrollTop;
   }, { passive: true });
+=======
+      // Update active state
+      navItems.forEach(nav => nav.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+>>>>>>> parent of b454c29 (other update)
 });

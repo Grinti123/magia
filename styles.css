@@ -78,7 +78,7 @@ body {
 }
 
 .image-container img {
-  width: 101%;
+  width: 100%;
   height: 100%;
   object-fit: cover;
 }
@@ -88,7 +88,7 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  width: 99.5%;
+  width: 98.5%;
   height: 100vh;
   z-index: 10;
   overflow: hidden;
@@ -183,6 +183,7 @@ body {
   color: white;
 }
 
+<<<<<<< HEAD
 .arrow-container {
   position: fixed;
   bottom: 30px;
@@ -274,6 +275,8 @@ body {
   transform: scaleY(0);
 }
 
+=======
+>>>>>>> parent of b454c29 (other update)
 /* MOBILE STYLES - Small phones */
 @media only screen and (max-width: 480px) {
   .section {
@@ -284,10 +287,6 @@ body {
     overflow: hidden;
     /* Reduce the gap between elements */
     gap: 5px;
-  }
-
-  .image-container img {
-    width: 109.0%
   }
 
   .section img {
@@ -335,7 +334,7 @@ body {
   }
 
   .elevator-door-container {
-    width: 102.3%;
+    width: 100%;
   }
 
   /* Lottie animations for mobile */
@@ -418,14 +417,6 @@ body {
   /* Lottie animations for tablets */
   #dottie1, #dottie2, #dottie3, #dottie4 {
     transform: scale(1.1);
-  }
-
-  .arrow-container {
-    bottom: 20px;
-  }
-
-  .scroll-text {
-    font-size: 12px;
   }
 }
 
