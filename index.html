@@ -1,310 +1,84 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
-  <meta charset="UTF-8">
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>MAGIA</title>
-
-  <!-- GSAP & ScrollTrigger - Updated to use the correct CDN URLs -->
-
-  <script src="https://unpkg.com/gsap@3.12.7/dist/gsap.min.js"></script>
-
-  <script src="https://unpkg.com/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
-
-  <script src="https://unpkg.com/gsap@3.12.7/dist/ScrollToPlugin.min.js"></script>
-
-  <!-- Lottie Player -->
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-
-  <!-- Styles -->
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAGIA</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <link rel="stylesheet" href="styles.css">
-
 </head>
-
 <body>
+    <!-- Parallax container for scrolling space -->
+    <div class="parallax-container"></div>
 
-  <!-- Lift Navigation -->
-
-  <div class="lift-nav">
-
-    <div class="lift-nav-item" data-section="section1">1</div>
-
-    <div class="lift-nav-item" data-section="section2">2</div>
-
-    <div class="lift-nav-item" data-section="section3">3</div>
-
-    <div class="lift-nav-item" data-section="section4">4</div>
-
-  </div>
-
-
-
-  <div id="arrow-container" class="arrow-container">
-
-    <div id="arrow" style="width: 50px; height: 50px;"></div>
-
-    <div class="scroll-text">scroll down</div>
-
-  </div>
-
-  <script>
-
-    lottie.loadAnimation({
-
-      container: document.getElementById("arrow"),
-
-      renderer: "svg",
-
-      loop: true,
-
-      autoplay: true,
-
-      path: "./jsons/main.json"
-
-    });
-
-  </script>
-
-
-
-
-
-  <div class="wrapper">
-
-    <div class="content">
-
-      <section id="section1" class="section">
-
-        <!-- Floor number indicator -->
-
-        <div class="floor-line"></div>
-
-        <div class="floor-number">1</div>
-
-
-
-
-
-        <!-- Elevator door container -->
-
-        <div class="elevator-door-container">
-
-          <div class="door-left"></div>
-
-          <div class="door-right"></div>
-
+    <!-- Intro section for GSAP zoom effect -->
+    <div id="intro">
+        <div class="intro-content">
+            <img class="intro-img" src="intro.png" alt="">
+            <div class="elevator-door-container">
+                <div class="door-left"></div>
+                <div class="door-right"></div>
+            </div>
+            <div class="text-container">
+                <p class="intro-subtitle">Scroll down</p>
+                <div class="scroll-indicator">↓</div>
+            </div>
         </div>
-
-        <!-- Image content -->
-
-        <img src="Artboard 221@4x.png" alt="Artboard 7">
-
-
-
-        <!-- Lottie animation container moved next to image -->
-
-        <div id="dottie1" class="lottie-container"></div>
-
-
-
-
-
-        <!-- Lottie script -->
-
-        <script>
-
-          lottie.loadAnimation({
-
-            container: document.getElementById("dottie1"),
-
-            renderer: "svg",
-
-            loop: true,
-
-            autoplay: true,
-
-            path: "./jsons/piso1.json"
-
-          });
-
-        </script>
-
-      </section>
-
-
-
-      <section id="section2" class="section">
-
-        <!-- Floor number indicator -->
-
-        <div class="floor-line"></div>
-
-        <div class="floor-number">2</div>
-
-
-
-
-
-
-        <!-- Lottie animation container moved next to image -->
-
-        <div id="dottie2" class="lottie-container"></div>
-
-
-
-        <!-- Image content -->
-
-        <img src="2@4x.png" alt="">
-
-
-
-
-
-        <!-- Lottie script -->
-
-        <script>
-
-          lottie.loadAnimation({
-
-            container: document.getElementById("dottie2"),
-
-            renderer: "svg",
-
-            loop: true,
-
-            autoplay: true,
-
-            path: "./jsons/piso2.json"
-
-          });
-
-        </script>
-
-      </section>
-
-
-
-      <section id="section3" class="section">
-
-        <!-- Floor number indicator -->
-
-        <div class="floor-line"></div>
-
-        <div class="floor-number">3</div>
-
-
-
-
-
-
-        <!-- Image content -->
-
-        <img src="Artboard 231@4x.png" alt="Artboard 9">
-
-
-
-        <!-- Lottie animation container moved next to image -->
-
-        <div id="dottie3" class="lottie-container"></div>
-
-
-
-        <!-- Lottie script -->
-
-        <script>
-
-          lottie.loadAnimation({
-
-            container: document.getElementById("dottie3"),
-
-            renderer: "svg",
-
-            loop: true,
-
-            autoplay: true,
-
-            path: "./jsons/piso3.json"
-
-          });
-
-        </script>
-
-      </section>
-
-
-
-      <section id="section4" class="section">
-
-        <!-- Floor number indicator -->
-
-        <div class="floor-line"></div>
-
-        <div class="floor-number">4</div>
-
-
-
-
-
-
-        <!-- Lottie animation container moved next to image -->
-
-        <div id="dottie4" class="lottie-container"></div>
-
-
-
-        <!-- Image content (moved above lottie) -->
-
-        <img src="Artboard 20.svg" alt="">
-
-
-
-
-
-        <!-- Lottie script -->
-
-        <script>
-
-          lottie.loadAnimation({
-
-            container: document.getElementById("dottie4"),
-
-            renderer: "svg",
-
-            loop: true,
-
-            autoplay: true,
-
-            path: "./jsons/piso4.json"
-
-          });
-
-        </script>
-
-      </section>
-
     </div>
 
-
-
-    <div class="image-container">
-
-      <img src="intro.png" alt="image">
-
+    <!-- Progress bar -->
+    <div id="progressBar">
+        <div id="progress"></div>
     </div>
 
-  </div>
-
-
-
-  <script src="scripts.js"></script>
-
-</body>
-
+    <!-- Swipe indicator for mobile -->
+    <!-- Main elevator content -->
+    <div class="container closed" id="scene">
+        <div class="doors">
+            <div class="door left-door"></div>
+            <div class="door right-door"></div>
+        </div>
+        <section id="section1" class="section active">
+            <div class="floor-line"></div>
+            <div class="floor-number">1</div>
+            <div class="content-container">
+                <img src="Artboard 221@4x.png" alt="Artboard 7">
+                <div id="dottie1" class="lottie-container"></div>
+            </div>
+        </section>
+        <section id="section2" class="section">
+            <div class="floor-line"></div>
+            <div class="floor-number">2</div>
+            <div class="content-container">
+                <div id="dottie2" class="lottie-container"></div>
+                <img src="2@4x.png" alt="">
+            </div>
+        </section>
+        <section id="section3" class="section">
+            <div class="floor-line"></div>
+            <div class="floor-number">3</div>
+            <div class="content-container">
+                <img src="Artboard 231@4x.png" alt="Artboard 9">
+                <div id="dottie3" class="lottie-container"></div>
+            </div>
+        </section>
+        <section id="section4" class="section">
+            <div class="floor-line"></div>
+            <div class="floor-number">4</div>
+            <div class="content-container">
+                <div id="dottie4" class="lottie-container"></div>
+                <img src="Artboard 20.svg" alt="">
+            </div>
+        </section>
+        <div class="btn-container">
+            <button class="btn-lift active" onclick="goToFloor(0)">1</button>
+            <button class="btn-lift" onclick="goToFloor(1)">2</button>
+            <button class="btn-lift" onclick="goToFloor(2)">3</button>
+            <button class="btn-lift" onclick="goToFloor(3)">4</button>
+        </div>
+    </div>
+    <script src="scripts.js"></script>
+    </body>
 </html>

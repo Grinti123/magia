@@ -1,852 +1,465 @@
-document.addEventListener("DOMContentLoaded", function() {
 
-
-
-  // Check if GSAP is available
-
-  if (typeof gsap === 'undefined') {
-
-    console.error("GSAP library not loaded. Using fallback functionality.");
-
-
-
-    // Show the first section
-
-    document.getElementById('section1').classList.add('visible');
-
-
-
-    // Show the navigation
-
-    const liftNav = document.querySelector('.lift-nav');
-
-    liftNav.style.opacity = 1;
-
-    liftNav.style.visibility = 'visible';
-
-    liftNav.classList.add('visible');
-
-
-
-    // Show an alert to inform the user
-
-    setTimeout(() => {
-
-      alert("Some animation features are not available. Please ensure you're connected to the internet or contact the site administrator.");
-
-    }, 1000);
-
-
-
-    // Basic door animation as fallback
-
-    const doorLeft = document.querySelector('.door-left');
-
-    const doorRight = document.querySelector('.door-right');
-
-
-
-    doorLeft.style.transition = 'transform 1.5s ease-in-out';
-
-    doorRight.style.transition = 'transform 1.5s ease-in-out';
-
-
-
-    setTimeout(() => {
-
-      doorLeft.style.transform = 'translateX(-100%)';
-
-      doorRight.style.transform = 'translateX(100%)';
-
-    }, 500);
-
-
-
-    // Add simple navigation functionality
-
-    const navItems = document.querySelectorAll('.lift-nav-item');
-
-
-
-    // Set first nav item as active by default
-
-    navItems[0].classList.add('active');
-
-
-
-    // Adjust navigation click behavior for door transition
-
-    navItems.forEach(item => {
-
-      item.addEventListener('click', function() {
-
-        const targetSection = this.getAttribute('data-section');
-
-        const sectionIndex = parseInt(targetSection.replace('section', '')) - 1;
-
-
-
-        // Update active state for nav items
-
-        navItems.forEach(nav => nav.classList.remove('active'));
-
-        this.classList.add('active');
-
-
-
-        // Function to close current section's doors
-
-        function closeDoors(section) {
-
-          return new Promise(resolve => {
-
-            section.classList.remove('visible');
-
-
+        const intro = document.getElementById('intro');
+        const introContent = document.querySelector('.intro-content');
+        const scene = document.getElementById('scene');
+        const progress = document.getElementById('progress');
+        const progressBar = document.getElementById('progressBar');
+        const sections = document.querySelectorAll('.section');
+        const parallaxContainer = document.querySelector('.parallax-container');
+        const doorLeft = document.querySelector('.door-left');
+        const doorRight = document.querySelector('.door-right');
+        const btnLifts = document.querySelectorAll('.btn-lift');
+        const swipeIndicator = document.querySelector('.swipe-indicator');
+
+        let transitionComplete = false;
+        let wheeling = false;
+        let isScrolling = false;
+        let scrollTimeout;
+        let currentFloor = 0; // 0-based index (0 = floor 1)
+        let isTransitioning = false;
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        // Initialize GSAP ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Setup GSAP animations
+        const setupGSAP = () => {
+            // Create timeline for intro animations
+            const introTimeline = gsap.timeline({
+                scrollTrigger: {
+                    trigger: ".parallax-container",
+                    start: "top top",
+                    end: "bottom bottom",
+                    scrub: true,
+                    onUpdate: (self) => {
+                        // Update progress bar
+                        gsap.to(progress, {
+                            width: `${self.progress * 100}%`,
+                            duration: 0.1,
+                            ease: "none"
+                        });
+
+                        // Animate the doors based on scroll progress
+                        gsap.to(doorLeft, {
+                            x: `-${self.progress * 100}%`,
+                            duration: 0.1,
+                            ease: "none"
+                        });
+
+                        gsap.to(doorRight, {
+                            x: `${self.progress * 100}%`,
+                            duration: 0.1,
+                            ease: "none"
+                        });
+
+                        // Complete transition when progress reaches 98%
+                        if (self.progress >= 0.98 && !transitionComplete) {
+                            // Immediately hide the intro to prevent flashing
+                            gsap.set(intro, { opacity: 0, visibility: "hidden" });
+                            completeTransition();
+                        }
+                    }
+                }
+            });
+
+            // Add animations to timeline
+            introTimeline
+                .to(introContent, {
+                    scale: 3,
+                    ease: "power1.inOut",
+                    duration: 1
+                }, 0)
+                .to(intro, {
+                    opacity: 0,
+                    ease: "power1.inOut",
+                    duration: 1
+                }, 0.5);
+        };
+
+        // Check if it's a touch device
+        const isTouchDevice = () => {
+            return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        };
+
+        // Modify completeTransition function
+        function completeTransition() {
+            if (transitionComplete) return;
+            transitionComplete = true;
+
+            // Kill all ScrollTriggers
+            ScrollTrigger.getAll().forEach(st => st.kill());
+
+            // Hide progress bar
+            gsap.to(progressBar, {
+                opacity: 0,
+                duration: 0.5
+            });
+
+            // Apply these changes immediately
+            gsap.set(intro, { opacity: 0, visibility: "hidden" });
+
+            // Show elevator after intro animation
+            setTimeout(() => {
+                intro.style.display = 'none';
+                parallaxContainer.style.display = 'none';
+                scene.classList.add('show');
+
+                // Show swipe indicator on mobile
+                if (isTouchDevice() && window.innerWidth < 768) {
+                    swipeIndicator.style.display = 'block';
+
+                    // Hide the indicator after 5 seconds
+                    setTimeout(() => {
+                        gsap.to(swipeIndicator, {
+                            opacity: 0,
+                            duration: 1,
+                            onComplete: () => { swipeIndicator.style.display = 'none'; }
+                        });
+                    }, 5000);
+                }
+
+                // Load animations if not already loaded
+                loadLottieAnimations();
+
+                // Open the doors after scene is visible
+                setTimeout(() => {
+                    scene.classList.add('open');
+
+                    // Enable scroll wheel detection for elevator navigation
+                    setupNavigation();
+
+                    // Enable body scroll for inside elevator
+                    document.body.style.overflow = '';
+
+                    // Update floor button indicators
+                    updateFloorIndicators(0);
+                }, 1000);
+            }, 500);
+        }
+
+        // Setup navigation (scroll and touch)
+        function setupNavigation() {
+            // Mouse wheel support
+            window.addEventListener('wheel', handleElevatorScroll, { passive: false });
+
+            // Touch support for mobile
+            if (isTouchDevice()) {
+                window.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                }, { passive: true });
+
+                window.addEventListener('touchend', handleTouchEnd, { passive: false });
+            }
+
+            // Keyboard support for accessibility
+            window.addEventListener('keydown', handleKeyboardNavigation);
+        }
+
+        // Handle touch end for swipe navigation
+        function handleTouchEnd(e) {
+            if (isTransitioning) return;
+
+            touchEndY = e.changedTouches[0].clientY;
+            const swipeDistance = touchStartY - touchEndY;
+
+            // Threshold to detect swipe (adjust as needed)
+            if (Math.abs(swipeDistance) > 50) {
+                // Prevent default only if we're handling the swipe
+                e.preventDefault();
+
+                if (!isScrolling) {
+                    isScrolling = true;
+
+                    if (swipeDistance > 0) {
+                        // Swipe up - go to next floor if not at last floor
+                        if (currentFloor < sections.length - 1) {
+                            goToFloor(currentFloor + 1);
+                        }
+                    } else {
+                        // Swipe down - go to previous floor or intro
+                        if (currentFloor > 0) {
+                            goToFloor(currentFloor - 1);
+                        } else {
+                            goBackToIntro();
+                        }
+                    }
+
+                    // Debounce events
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        isScrolling = false;
+                    }, 1000);
+                }
+            }
+        }
+
+        // Keyboard navigation support
+        function handleKeyboardNavigation(e) {
+            if (isTransitioning) return;
+
+            // Arrow up/down keys
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+
+                if (!isScrolling) {
+                    isScrolling = true;
+
+                    if (e.key === 'ArrowDown') {
+                        // Go to next floor if not at last floor
+                        if (currentFloor < sections.length - 1) {
+                            goToFloor(currentFloor + 1);
+                        }
+                    } else {
+                        // Go to previous floor or intro
+                        if (currentFloor > 0) {
+                            goToFloor(currentFloor - 1);
+                        } else {
+                            goBackToIntro();
+                        }
+                    }
+
+                    // Debounce events
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        isScrolling = false;
+                    }, 1000);
+                }
+            }
+
+            // Number keys 1-4 for direct floor access
+            if (e.key >= '1' && e.key <= '4') {
+                const floorIndex = parseInt(e.key) - 1;
+                if (floorIndex >= 0 && floorIndex < sections.length) {
+                    goToFloor(floorIndex);
+                }
+            }
+        }
+
+        // Handle scroll wheel events inside elevator
+        function handleElevatorScroll(e) {
+            if (isTransitioning) return;
+
+            e.preventDefault();
+
+            if (!isScrolling) {
+                isScrolling = true;
+
+                // Determine scroll direction
+                if (e.deltaY > 0) {
+                    // Scrolling down - go to next floor if not at last floor
+                    if (currentFloor < sections.length - 1) {
+                        goToFloor(currentFloor + 1);
+                    }
+                } else {
+                    // Scrolling up
+                    if (currentFloor > 0) {
+                        // Go to previous floor
+                        goToFloor(currentFloor - 1);
+                    } else {
+                        // At first floor, go back to intro
+                        goBackToIntro();
+                    }
+                }
+
+                // Debounce scroll events
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    isScrolling = false;
+                }, 1000);
+            }
+        }
+
+        // Function to go back to intro with zoom-out effect
+        function goBackToIntro() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            // Hide swipe indicator if visible
+            if (swipeIndicator.style.display === 'block') {
+                swipeIndicator.style.display = 'none';
+            }
+
+            // Clean up Lottie animations to prevent duplicates
+            if (window.lottieAnimations) {
+                window.lottieAnimations.forEach(anim => {
+                    if (anim) {
+                        anim.destroy();
+                    }
+                });
+                window.lottieAnimations = null;
+            }
+
+            // Close elevator doors first
+            scene.classList.remove('open');
+            scene.classList.add('closed');
+
+            // Start transition back to intro
+            setTimeout(() => {
+                // Reset flags
+                transitionComplete = false;
+                isTransitioning = false;
+
+                // Remove event listeners
+                window.removeEventListener('wheel', handleElevatorScroll);
+                if (isTouchDevice()) {
+                    window.removeEventListener('touchend', handleTouchEnd);
+                }
+                window.removeEventListener('keydown', handleKeyboardNavigation);
+
+                // Hide elevator container
+                scene.classList.remove('show');
+
+                // Show intro elements
+                intro.style.display = 'flex';
+                parallaxContainer.style.display = 'block';
+                progressBar.style.opacity = '1';
+
+                // Reset doors position
+                gsap.set(doorLeft, { x: '-100%' });
+                gsap.set(doorRight, { x: '100%' });
+
+                // Create reverse zoom animation
+                const reverseTimeline = gsap.timeline();
+
+                // Set initial state (zoom in)
+                gsap.set(introContent, { scale: 3 });
+                gsap.set(intro, { opacity: 0, visibility: "visible" });
+
+                // Animate zoom out
+                reverseTimeline
+                    .to(introContent, {
+                        scale: 1,
+                        ease: "power1.inOut",
+                        duration: 1
+                    }, 0)
+                    .to(intro, {
+                        opacity: 1,
+                        ease: "power1.inOut",
+                        duration: 1
+                    }, 0);
+
+                // Reset scroll position
+                window.scrollTo({ top: 0, behavior: 'auto' });
+
+                // Re-setup GSAP
+                setTimeout(() => {
+                    setupGSAP();
+                }, 500);
+            }, 1000);
+        }
+
+        // Load Lottie animations
+        function loadLottieAnimations() {
+            // Clear any existing animations first
+            document.getElementById("dottie1").innerHTML = "";
+            document.getElementById("dottie2").innerHTML = "";
+            document.getElementById("dottie3").innerHTML = "";
+            document.getElementById("dottie4").innerHTML = "";
+
+            // Initialize new animation instances
+            const anim1 = lottie.loadAnimation({
+                container: document.getElementById("dottie1"),
+                renderer: "svg",
+                loop: true,
+                autoplay: true,
+                path: "./jsons/piso1.json"
+            });
+
+            const anim2 = lottie.loadAnimation({
+                container: document.getElementById("dottie2"),
+                renderer: "svg",
+                loop: true,
+                autoplay: true,
+                path: "./jsons/piso2.json"
+            });
+
+            const anim3 = lottie.loadAnimation({
+                container: document.getElementById("dottie3"),
+                renderer: "svg",
+                loop: true,
+                autoplay: true,
+                path: "./jsons/piso3.json"
+            });
+
+            const anim4 = lottie.loadAnimation({
+                container: document.getElementById("dottie4"),
+                renderer: "svg",
+                loop: true,
+                autoplay: true,
+                path: "./jsons/piso4.json"
+            });
+
+            // Store animation references for later cleanup
+            window.lottieAnimations = [anim1, anim2, anim3, anim4];
+        }
+
+        // Floor transition
+        function goToFloor(index) {
+            if (isTransitioning || currentFloor === index) return;
+            isTransitioning = true;
 
             // Close the doors
+            scene.classList.remove("open");
+            scene.classList.add("closed");
 
-            const doorLeft = document.querySelector('.door-left');
-
-            const doorRight = document.querySelector('.door-right');
-
-
-
-            if (doorLeft && doorRight) {
-
-              doorLeft.style.transform = 'translateX(0)';
-
-              doorRight.style.transform = 'translateX(0)';
-
-            }
-
-
-
-            // Trigger door closing animation
-
+            // Wait for doors to close
             setTimeout(() => {
+                // Change active section
+                document.querySelector(".active").classList.remove("active");
+                sections[index].classList.add("active");
 
-              resolve();
+                // Update current floor
+                currentFloor = index;
 
-            }, 800); // Match the CSS transition duration
+                // Update floor button indicators
+                updateFloorIndicators(currentFloor);
 
-          });
+                // Wait for elevator to "move"
+                setTimeout(() => {
+                    // Open doors
+                    scene.classList.remove("closed");
+                    scene.classList.add("open");
 
+                    // Reset transition flag
+                    isTransitioning = false;
+                }, 1000);
+            }, 1000);
         }
 
-
-
-        // Function to open target section's doors
-
-        function openDoors(section) {
-
-          return new Promise(resolve => {
-
-            // Slight delay to ensure previous section is closed
-
-            setTimeout(() => {
-
-              section.classList.add('visible');
-
-
-
-              // Open the doors
-
-              const doorLeft = document.querySelector('.door-left');
-
-              const doorRight = document.querySelector('.door-right');
-
-
-
-              if (doorLeft && doorRight) {
-
-                doorLeft.style.transform = 'translateX(-100%)';
-
-                doorRight.style.transform = 'translateX(100%)';
-
-              }
-
-
-
-              resolve();
-
-            }, 200);
-
-          });
-
+        // Update floor indicators
+        function updateFloorIndicators(floorIndex) {
+            // Update active button
+            btnLifts.forEach((btn, index) => {
+                if (index === floorIndex) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
         }
 
-
-
-        // Get current and target sections
-
-        const currentSection = document.querySelector('.section.visible');
-
-        const section = document.getElementById(targetSection);
-
-
-
-        // Sequence the door transitions
-
-        if (currentSection && currentSection !== section) {
-
-          closeDoors(currentSection).then(() => {
-
-            section.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            setTimeout(() => {
-
-              openDoors(section);
-
-            }, 500);
-
-          });
-
-        } else if (!currentSection) {
-
-          // If no section is currently visible, just open the target section
-
-          openDoors(section);
-
-        }
-
-
-
-        // Ensure the corresponding dottie is visible
-
-        const dottieId = `dottie${sectionIndex + 1}`;
-
-        const dottie = document.getElementById(dottieId);
-
-
-
-        if (dottie) {
-
-          dottie.closest('.section').classList.add('visible');
-
-        }
-
-      });
-
-    });
-
-
-
-    const sections = document.querySelectorAll('.section');
-
-    navItems.forEach((item, index) => {
-
-      if (index === 0) item.classList.add('active');
-
-
-
-      item.addEventListener('click', function() {
-
-        // Hide all sections
-
-        sections.forEach(section => section.classList.remove('visible'));
-
-
-
-        // Show the clicked section
-
-        const targetId = this.getAttribute('data-section');
-
-        document.getElementById(targetId).classList.add('visible');
-
-
-
-        // Update active state
-
-        navItems.forEach(nav => nav.classList.remove('active'));
-
-        this.classList.add('active');
-
-      });
-
-    });
-
-
-
-    return; // Exit early since GSAP isn't available
-
-  }
-
-
-
-  // If GSAP is available, initialize the advanced functionality
-
-  gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
-
-
-
-  // Function to handle scroll animation with responsive considerations
-
-  function initScrollAnimation() {
-
-    // Check if any previous instances exist and kill them
-
-    if (ScrollTrigger.getAll().length > 0) {
-
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
-
-    }
-
-
-
-    // Check device type
-
-    const isMobile = window.innerWidth <= 768;
-
-    const isDesktop = window.innerWidth > 1024;
-
-
-
-    // Adjust scroll length based on device type - MUCH SHORTER FOR MOBILE
-
-    const scrollLength = isMobile ? "+=250%" : isDesktop ? "+=500%" : "+=400%";
-
-
-
-    // Adjust scrub speed - FASTER FOR MOBILE
-
-    const scrubSpeed = isMobile ? 0.5 : 1.5;
-
-
-
-    // Main timeline with ScrollTrigger
-
-    const tl = gsap.timeline({
-
-      scrollTrigger: {
-
-        trigger: ".wrapper",
-
-        start: "top top",
-
-        end: scrollLength, // Shorter scroll distance for mobile
-
-        pin: true,
-
-        scrub: scrubSpeed, // Faster scrub for mobile
-
-        invalidateOnRefresh: true,
-
-        id: "scrolltrigger-main"
-
-        // Removed the onUpdate function that was controlling active navigation based on scroll
-
-      }
-
-    });
-
-
-
-    // Set initial position - ensure doors are visible at start
-
-    gsap.set([".door-left", ".door-right"], {
-
-      autoAlpha: 1,
-
-      x: 0 // Reset position in case of resize
-
-    });
-
-
-
-    // Hide lift nav initially
-
-    gsap.set(".lift-nav", {
-
-      autoAlpha: 0
-
-    });
-
-
-
-    // Adjust animation durations based on device
-
-    const doorDuration = isMobile ? 1 : 2;
-
-    const zoomDuration = isMobile ? 1 : 2;
-
-
-
-    // Door and zoom animations start simultaneously
-
-    tl.to(".door-left", {
-
-      x: "-100%",
-
-      duration: doorDuration,
-
-      ease: "power2.out"
-
-    }, 0) // Start immediately
-
-
-
-    .to(".door-right", {
-
-      x: "100%",
-
-      duration: doorDuration,
-
-      ease: "power2.out"
-
-    }, 0) // Start at the same time as door-left
-
-
-
-    // Zoom animation starts simultaneously with the doors
-
-    .to(".image-container img", {
-
-      scale: isMobile ? 2 : isDesktop ? 4 : 3,
-
-      z: isMobile ? 250 : isDesktop ? 300 : 350,
-
-      duration: zoomDuration, // Same duration as doors
-
-      transformOrigin: "center center",
-
-      ease: "power2.out"
-
-    }, 0) // Start at the same time as doors
-
-
-
-    // Section scale animation - coordinated with zoom
-
-    .to(".section:first-child", {
-
-      scale: isMobile ? 1.05 : isDesktop ? 1.08 : 1.1,
-
-      duration: zoomDuration, // Match zoom duration
-
-      transformOrigin: "center center",
-
-      ease: "power2.out"
-
-    }, 0) // Start at the same time as doors and zoom
-
-
-
-    // Move the lift-nav animation to appear AFTER the door and zoom animations
-
-    .to(".lift-nav", {
-
-      autoAlpha: 1,
-
-      duration: 0.3,
-
-      ease: "power1.inOut",
-
-      onComplete: function() {
-
-        document.querySelector('.lift-nav').classList.add('visible');
-
-      }
-
-    }, doorDuration); // Start after the doors and zoom finish
-
-  }
-
-
-
-  // Initialize animation
-
-  initScrollAnimation();
-
-
-
-  // Force the section1 to be visible after a short delay
-
-  setTimeout(function() {
-
-    document.getElementById('section1').classList.add('visible');
-
-  }, 500);
-
-
-
-  // Reinitialize on window resize with debounce
-
-  let resizeTimer;
-
-  window.addEventListener("resize", function() {
-
-    clearTimeout(resizeTimer);
-
-    resizeTimer = setTimeout(function() {
-
-      initScrollAnimation();
-
-
-
-      // Ensure current section remains visible after resize
-
-      const sections = document.querySelectorAll(".section");
-
-      sections.forEach(section => {
-
-        if (isElementInViewport(section)) {
-
-          section.classList.add("visible");
-
-        }
-
-      });
-
-    }, 250);
-
-  });
-
-
-
-  // Utility function to check if element is in viewport
-
-  function isElementInViewport(el) {
-
-    const rect = el.getBoundingClientRect();
-
-    return (
-
-      rect.top >= 0 &&
-
-      rect.left >= 0 &&
-
-      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-
-      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-
-    );
-
-  }
-
-
-
-  // Create observer for sections for general visibility
-const sectionsObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      // Remove setTimeout and directly add visible class without delay
-      entry.target.classList.add("visible");
-      // Removed the 300ms delay that was part of the fade effect
-    }
-  });
-}, { threshold: 0.1 });
-
-
-
-  // Observe all sections
-
-  const sections = document.querySelectorAll(".section");
-
-  sections.forEach(section => sectionsObserver.observe(section));
-
-
-
-  // Initialize lift navigation
-
-  const navItems = document.querySelectorAll('.lift-nav-item');
-
-
-
-  // Set first nav item as active by default
-
-  navItems[0].classList.add('active');
-
-
-
-  // UPDATED LIFT NAVIGATION FUNCTIONALITY
-
-  navItems.forEach(item => {
-
-    item.addEventListener('click', function() {
-
-      const targetSection = this.getAttribute('data-section');
-
-      const sectionIndex = parseInt(targetSection.replace('section', '')) - 1;
-
-      const targetSectionElement = document.getElementById(targetSection);
-
-
-
-      // Update active state for nav items
-
-      navItems.forEach(nav => nav.classList.remove('active'));
-
-      this.classList.add('active');
-
-
-
-      // Function to close doors
-
-      function closeDoors() {
-
-        return new Promise(resolve => {
-
-          // Hide all sections
-
-          document.querySelectorAll('.section.visible').forEach(section => {
-
-            section.classList.remove('visible');
-
-          });
-
-
-
-          // Close the doors
-
-          const doorLeft = document.querySelector('.door-left');
-
-          const doorRight = document.querySelector('.door-right');
-
-
-
-          if (doorLeft && doorRight) {
-
-            gsap.to(doorLeft, { x: "0%", duration: 0.5, ease: "power2.out" });
-
-            gsap.to(doorRight, { x: "0%", duration: 0.5, ease: "power2.out" });
-
-          }
-
-
-
-          // Allow time for door animation
-
-          setTimeout(resolve, 600);
-
-        });
-
-      }
-
-
-
-      // Function to open doors
-
-      function openDoors() {
-
-        return new Promise(resolve => {
-
-          const doorLeft = document.querySelector('.door-left');
-
-          const doorRight = document.querySelector('.door-right');
-
-
-
-          if (doorLeft && doorRight) {
-
-            gsap.to(doorLeft, { x: "-100%", duration: 0.5, ease: "power2.out" });
-
-            gsap.to(doorRight, { x: "100%", duration: 0.5, ease: "power2.out" });
-
-          }
-
-
-
-          // Show target section
-
-          setTimeout(() => {
-
-            if (targetSectionElement) {
-
-              targetSectionElement.classList.add('visible');
-
+        // Handle window resize
+        function handleResize() {
+            // Adjust any size-dependent elements if needed
+            if (isTouchDevice() && window.innerWidth < 768 && transitionComplete) {
+                swipeIndicator.style.display = 'block';
+
+                // Fade out after a short delay
+                setTimeout(() => {
+                    gsap.to(swipeIndicator, {
+                        opacity: 0,
+                        duration: 1,
+                        onComplete: () => { swipeIndicator.style.display = 'none'; }
+                    });
+                }, 3000);
+            } else {
+                swipeIndicator.style.display = 'none';
             }
-
-
-
-            // Make sure the corresponding dottie is visible
-
-            const dottieId = `dottie${sectionIndex + 1}`;
-
-            const dottie = document.getElementById(dottieId);
-
-            if (dottie) {
-
-              dottie.closest('.section').classList.add('visible');
-
-            }
-
-
-
-            resolve();
-
-          }, 600);
-
-        });
-
-      }
-
-
-
-      // Execute navigation with door animations
-
-      closeDoors().then(() => {
-
-        // Get the ScrollTrigger instance
-
-        const scrollTrigger = ScrollTrigger.getById('scrolltrigger-main');
-
-        if (scrollTrigger) {
-
-          // Calculate the exact progress based on section index
-
-          const progress = sectionIndex / 3; // For 4 sections
-
-
-
-          // Calculate the scroll position
-
-          const scrollPosition = scrollTrigger.start + (progress * (scrollTrigger.end - scrollTrigger.start));
-
-
-
-          // Set the scroll position with GSAP
-
-          gsap.to(window, {
-
-            scrollTo: scrollPosition,
-
-            duration: 0.8,
-
-            ease: "power2.inOut",
-
-            onComplete: function() {
-
-              openDoors();
-
-              // Force a refresh to ensure everything is in sync
-
-              ScrollTrigger.refresh();
-
-            }
-
-          });
-
-        } else {
-
-          // Fallback if ScrollTrigger is not available
-
-          targetSectionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-          setTimeout(openDoors, 500);
-
         }
 
-      });
-
-    });
-
-  });
-
-
-
-  // Use only the LottieObserver for active navigation
-
-  const lottieObserver = new IntersectionObserver((entries) => {
-
-    entries.forEach(entry => {
-
-      if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
-
-        // Get the dottie number from the ID (e.g., "dottie1" → 1)
-
-        const dottieId = entry.target.id;
-
-        const dottieNumber = parseInt(dottieId.replace('dottie', ''));
-
-
-
-        // Update the navigation to match the visible dottie
-
-        const navItems = document.querySelectorAll('.lift-nav-item');
-
-        navItems.forEach((item, index) => {
-
-          if (index === dottieNumber - 1) {
-
-            item.classList.add('active');
-
-          } else {
-
-            item.classList.remove('active');
-
-          }
-
-        });
-
-      }
-
-    });
-
-  }, { threshold: [0.5] }); // Trigger when Lottie is 50% visible
-
-
-
-  // Observe all Lottie containers
-
-  document.querySelectorAll('.lottie-container').forEach(lottie => {
-
-    lottieObserver.observe(lottie);
-
-  });
-
-
-
-  // Handle arrow container visibility on scroll
-
-  const arrowContainer = document.getElementById('arrow-container');
-
-
-
-  // Show arrow on page load
-
-  if (arrowContainer) {
-
-    arrowContainer.style.opacity = '1';
-
-  }
-
-
-
-  // Hide arrow on scroll
-
-  let scrollTimer;
-
-  window.addEventListener('scroll', function() {
-
-    if (arrowContainer) {
-
-      // Hide the arrow container
-
-      arrowContainer.style.opacity = '0';
-
-
-
-      // Clear any existing timers
-
-      clearTimeout(scrollTimer);
-
-
-
-      // If the user returns to the top of the page, show the arrow again
-
-      if (window.scrollY <= 100) {
-
-        scrollTimer = setTimeout(function() {
-
-          arrowContainer.style.opacity = '1';
-
-        }, 1000);
-
-      }
-
-    }
-
-  });
-
-});
+        // Initialize on page load
+        window.onload = () => {
+            setupGSAP();
+            window.addEventListener('resize', handleResize);
+        };

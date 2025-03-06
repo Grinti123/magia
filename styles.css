@@ -1,1313 +1,354 @@
-* {
-
-  margin: 0;
-
-  padding: 0;
-
-  box-sizing: border-box;
-
-}
-
-
-
-body {
-
-  background-color: black;
-
-  overflow-x: hidden;
-
-  font-family: Arial, sans-serif;
-
-  height: 100%;
-
-}
-
-
-
-.wrapper, .content {
-
-  position: relative;
-
-  width: 100%;
-
-}
-
-
-
-.content .section {
-
-  width: 100%;
-
-  height: 100vh;
-
-  display: flex;
-
-  flex-direction: row;
-
-  justify-content: center;
-
-  align-items: center;
-
-  position: relative;
-
-  padding: 1rem;
-
-  gap: 20px;
-
-  flex-wrap: wrap;
-
-}
-
-
-
-/* Floor number indicator */
-
-.floor-number {
-
-  position: absolute;
-
-  top: 20px;
-
-  left: 50%;
-
-  transform: translateX(-50%);
-
-  width: 60px;
-
-  height: 60px;
-
-  background-color: black;
-
-  border: 2px solid white;
-
-  border-radius: 50%;
-
-  display: flex;
-
-  justify-content: center;
-
-  align-items: center;
-
-  color: white;
-
-  font-size: 2rem;
-
-  font-weight: bold;
-
-  z-index: 5;
-
-}
-
-
-
-/* Horizontal line through floor number */
-
-.floor-line {
-
-  position: absolute;
-
-  top: 50px;
-
-  left: 0;
-
-  width: 100%;
-
-  height: 2px;
-
-  background-color: white;
-
-  z-index: 4;
-
-}
-
-
-
-.image-container {
-
-  width: 100%;
-
-  height: 100vh;
-
-  position: absolute;
-
-  top: 0;
-
-  left: 0;
-
-  right: 0;
-
-  z-index: 2;
-
-  perspective: 500px;
-
-  overflow: hidden;
-
-}
-
-
-
-.image-container img {
-
-  width: 101%;
-
-  height: 100%;
-
-  object-fit: cover;
-
-}
-
-
-
-/* Elevator door styles */
-
-.elevator-door-container {
-
-  position: fixed;
-
-  top: 0;
-
-  left: 0;
-
-  width: 99.5%;
-
-  height: 100vh;
-
-  z-index: 10;
-
-  overflow: hidden;
-
-  pointer-events: none;
-
-}
-
-
-
-.door-left, .door-right {
-
-  position: absolute;
-
-  top: 0;
-
-  height: 100%;
-
-  width: 50%;
-
-  z-index: 10;
-
-  background-color: white;
-
-  border: 2px solid black;
-
-}
-
-
-
-.door-left {
-
-  left: 0;
-
-  border-right: 3px solid black;
-
-}
-
-
-
-.door-right {
-
-  right: 0;
-
-  border-left: 3px solid black;
-
-}
-
-
-
-/* Section image styles */
-
-.section img {
-
-  height: auto;
-
-  width: 40%;
-
-  min-width: 200px;
-
-  max-width: 500px;
-
-  object-fit: contain;
-
-  position: relative;
-
-  z-index: 3;
-
-}
-
-
-
-/* Lottie animation containers - updated to be flex items */
-
-.lottie-container {
-
-  width: 40%;
-
-  min-width: 200px;
-
-  max-width: 500px;
-
-  height: 400px;
-
-  position: relative;
-
-  overflow: hidden;
-
-  z-index: 3;
-
-  pointer-events: none;
-
-}
-
-
-
-/* Lift Navigation Styles */
-
-.lift-nav {
-
-  position: fixed;
-
-  left: 20px;
-
-  top: 50%;
-
-  transform: translateY(-50%);
-
-  z-index: 999;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 20px;
-
-  opacity: 0;
-
-  visibility: hidden;
-
-  transition: opacity 0.8s ease, visibility 0.8s ease;
-
-}
-
-
-
-.lift-nav.visible {
-
-  opacity: 1;
-
-  visibility: visible;
-
-}
-
-
-
-.lift-nav-item {
-
-  width: 50px;
-
-  height: 50px;
-
-  border-radius: 50%;
-
-  border: 3px solid black;
-
-  display: flex;
-
-  justify-content: center;
-
-  align-items: center;
-
-  font-size: 1.5rem;
-
-  font-weight: bold;
-
-  background-color: white;
-
-  color: black;
-
-  cursor: pointer;
-
-  transition: all 0.3s ease;
-
-}
-
-
-
-.lift-nav-item:hover {
-
-  transform: scale(1.1);
-
-}
-
-
-
-.lift-nav-item.active {
-
-  background-color: #9575cd;
-
-  color: white;
-
-}
-
-
-
-.arrow-container {
-
-  position: fixed;
-
-  bottom: 30px;
-
-  left: 50%; /* Changed from left: 50%; transform: translateX(-50%); */
-
-  transform: translateX(-50%);
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  z-index: 999;
-
-  opacity: 1;
-
-  transition: opacity 0.5s ease;
-
-  filter: hue-rotate(120deg);
-
-}
-
-
-
-.scroll-text {
-
-  color: black;
-
-  font-size: 14px;
-
-  margin-top: 5px;
-
-  font-weight: 500;
-
-  text-transform: lowercase;
-
-  letter-spacing: 1px;
-
-}
-
-
-
-[class*=curtain] {
-
-  position: fixed;
-
-  height: 100px;
-
-  margin: 5vh;
-
-  padding: 1vw;
-
-  width: 100%;
-
-  height: 100%;
-
-  z-index: 1000;
-
-}
-
-
-
-[class*=curtain]::after,
-
-[class*=curtain]::before {
-
-  content: '';
-
-  background-color: white;
-
-  position: absolute;
-
-  transition-duration: 0.5s;
-
-  border: 2px solid black;
-
-}
-
-
-
-[class*=curtain]:hover:after,
-
-[class*=curtain]:hover:before {
-
-  opacity: 0;
-
-}
-
-
-
-.curtain-0::after,
-
-.curtain-0::before {
-
-  height: 100%;
-
-  width: 50%;
-
-}
-
-
-
-.curtain-1::after,
-
-.curtain-1::before {
-
-  height: 50%;
-
-  width: 100%;
-
-}
-
-
-
-.curtain-0::after {
-
-  right: 0;
-
-  transform-origin: right;
-
-  border-right: 3px solid black;
-
-}
-
-
-
-.curtain-0::before {
-
-  left: 0;
-
-  transform-origin: left;
-
-  border-right: 3px solid black;
-
-}
-
-
-
-.curtain-0:hover:after,
-
-.curtain-0:hover:before {
-
-  transform: scaleX(0);
-
-}
-
-
-
-.curtain-1::after {
-
-  bottom: 0;
-
-  transform-origin: bottom;
-
-}
-
-
-
-.curtain-1::before {
-
-  top: 0;
-
-  transform-origin: top;
-
-}
-
-
-
-.curtain-1:hover:after,
-
-.curtain-1:hover:before {
-
-  transform: scaleY(0);
-
-}
-
-
-
-/* MOBILE STYLES - Small phones */
-
-@media only screen and (max-width: 480px) {
-
-  .section {
-
-    flex-direction: column;
-
-    justify-content: center;
-
-    padding: 70px 15px 20px 15px;
-
-    height: 100vh;
-
-    overflow: hidden;
-
-    /* Reduce the gap between elements */
-
-    gap: 5px;
-
-  }
-
-
-
-  .image-container img {
-
-    width: 109.0%
-
-  }
-
-
-
-  .section img {
-
-    position: relative;
-
-    width: 85%;
-
-    min-width: unset;
-
-    max-width: 300px;
-
-    z-index: 3;
-
-    /* Reduce top and bottom margins */
-
-    margin-top: 5px;
-
-    margin-bottom: 5px;
-
-  }
-
-
-
-  .lottie-container {
-
-    width: 85%;
-
-    min-width: unset;
-
-    max-width: 300px;
-
-    height: 300px;
-
-    /* Reduce bottom margin */
-
-    margin-bottom: 5px;
-
-  }
-
-
-
-  .floor-number {
-
-    width: 40px;
-
-    height: 40px;
-
-    font-size: 1.2rem;
-
-    top: 10px;
-
-    border-width: 1px;
-
-  }
-
-
-
-  .floor-line {
-
-    top: 30px;
-
-  }
-
-
-
-  .lift-nav {
-
-    left: 10px;
-
-  }
-
-
-
-  .lift-nav-item {
-
-    width: 35px;
-
-    height: 35px;
-
-    font-size: 1rem;
-
-    border-width: 2px;
-
-    gap: 12px;
-
-  }
-
-
-
-  .elevator-door-container {
-
-    width: 102.3%;
-
-  }
-
-
-
-  /* Lottie animations for mobile */
-
-  #dottie1, #dottie2, #dottie3, #dottie4 {
-
-    transform: scale(1.2);
-
-  }
-
-
-
-  /* Animation-specific adjustments */
-
-  #dottie1 {
-
-    transform: scale(1.2);
-
-  }
-
-
-
-  #dottie2 {
-
-    transform: scale(1.2);
-
-  }
-
-
-
-  #dottie3 {
-
-    transform: scale(1.2);
-
-  }
-
-
-
-  #dottie4 {
-
-    transform: scale(1.2);
-
-  }
-
-}
-
-
-
-/* TABLET STYLES - Larger phones and tablets */
-
-@media only screen and (min-width: 481px) and (max-width: 768px) {
-
-  .section {
-
-    flex-direction: column;
-
-    padding: 80px 20px 30px 20px;
-
-    justify-content: center;
-
-    align-items: center;
-
-    /* Reduce the gap between elements */
-
-    gap: 10px;
-
-    height: 100vh;
-
-    overflow: hidden;
-
-  }
-
-
-
-  .section img {
-
-    position: relative;
-
-    width: 80%;
-
-    min-width: unset;
-
-    max-width: 400px;
-
-    z-index: 3;
-
-    /* Reduce top and bottom margins */
-
-    margin-top: 3px;
-
-    margin-bottom: 3px;
-
-  }
-
-
-
-  .lottie-container {
-
-    width: 80%;
-
-    min-width: unset;
-
-    max-width: 400px;
-
-    height: 350px;
-
-    /* Reduce bottom margin */
-
-    margin-bottom: 3px;
-
-  }
-
-
-
-  .lift-nav {
-
-    left: 15px;
-
-  }
-
-
-
-  .lift-nav-item {
-
-    width: 40px;
-
-    height: 40px;
-
-    font-size: 1.2rem;
-
-  }
-
-
-
-  .floor-number {
-
-    width: 50px;
-
-    height: 50px;
-
-    font-size: 1.5rem;
-
-    top: 15px;
-
-  }
-
-
-
-  .floor-line {
-
-    top: 40px;
-
-  }
-
-
-
-  /* Lottie animations for tablets */
-
-  #dottie1, #dottie2, #dottie3, #dottie4 {
-
-    transform: scale(1.1);
-
-  }
-
-
-
-  .arrow-container {
-
-    bottom: 20px;
-
-  }
-
-
-
-  .scroll-text {
-
-    font-size: 12px;
-
-  }
-
-}
-
-
-
-/* Small laptops and large tablets */
-
-@media only screen and (min-width: 769px) and (max-width: 1024px) {
-
-  .section {
-
-    flex-direction: row;
-
-    justify-content: center;
-
-    padding: 80px 30px 30px 30px;
-
-    gap: 30px;
-
-    height: 100vh;
-
-    overflow: hidden;
-
-  }
-
-
-
-  .section img {
-
-    position: relative;
-
-    width: 45%;
-
-    min-width: unset;
-
-    max-width: 450px;
-
-    z-index: 3;
-
-  }
-
-
-
-  .lottie-container {
-
-    width: 45%;
-
-    height: 400px;
-
-    transform: scale(1);
-
-  }
-
-
-
-  .lift-nav {
-
-    left: 20px;
-
-  }
-
-
-
-  .lift-nav-item {
-
-    width: 45px;
-
-    height: 45px;
-
-    font-size: 1.4rem;
-
-  }
-
-}
-
-
-
-/* Medium to large desktops */
-
-@media only screen and (min-width: 1025px) and (max-width: 1439px) {
-
-  .section {
-
-    justify-content: center;
-
-    padding: 90px 50px 40px 50px;
-
-    gap: 40px;
-
-    max-width: 1400px;
-
-    margin: 0 auto;
-
-  }
-
-
-
-  .section img {
-
-    position: relative;
-
-    width: 40%;
-
-    max-width: 600px;
-
-    z-index: 3;
-
-  }
-
-
-
-  .lottie-container {
-
-    width: 40%;
-
-    max-width: 600px;
-
-    height: 450px;
-
-  }
-
-
-
-  .lift-nav {
-
-    left: 35px;
-
-  }
-
-
-
-  .lift-nav-item {
-
-    width: 55px;
-
-    height: 55px;
-
-    font-size: 1.7rem;
-
-  }
-
-
-
-  .floor-number {
-
-    width: 65px;
-
-    height: 65px;
-
-    font-size: 2.2rem;
-
-    top: 25px;
-
-  }
-
-
-
-  .floor-line {
-
-    top: 57px;
-
-  }
-
-}
-
-
-
-/* Large desktops */
-
-@media only screen and (min-width: 1440px) {
-
-  .section {
-
-    max-width: 1800px;
-
-    margin: 0 auto;
-
-    padding: 100px 60px 40px 60px;
-
-    gap: 50px;
-
-  }
-
-
-
-  .section img {
-
-    max-width: 750px;
-
-    width: 42%;
-
-    position: relative;
-
-    z-index: 3;
-
-  }
-
-
-
-  .lottie-container {
-
-    max-width: 750px;
-
-    width: 42%;
-
-    height: 500px;
-
-  }
-
-
-
-  .lift-nav {
-
-    left: 50px;
-
-  }
-
-
-
-  .lift-nav-item {
-
-    width: 60px;
-
-    height: 60px;
-
-    font-size: 2rem;
-
-  }
-
-
-
-  .floor-number {
-
-    width: 70px;
-
-    height: 70px;
-
-    font-size: 2.5rem;
-
-    top: 30px;
-
-  }
-
-
-
-  .floor-line {
-
-    top: 65px;
-
-  }
-
-}
-
-
-
-/* Ultra-wide screens */
-
-@media only screen and (min-width: 1900px) {
-
-  .section {
-
-    max-width: 1900px;
-
-    gap: 60px;
-
-  }
-
-
-
-  .lift-nav {
-
-    left: 60px;
-
-  }
-
-
-
-  .lift-nav-item {
-
-    width: 65px;
-
-    height: 65px;
-
-    font-size: 2.1rem;
-
-  }
-
-}
-
-
-
-/* Fix for very small height screens */
-
-@media only screen and (max-height: 600px) {
-
-  .section {
-
-    height: 100vh;
-
-    min-height: 500px;
-
-    padding-top: 60px;
-
-    justify-content: center;
-
-    overflow: hidden;
-
-  }
-
-
-
-  .floor-number {
-
-    width: 35px;
-
-    height: 35px;
-
-    font-size: 1.1rem;
-
-    top: 10px;
-
-  }
-
-
-
-  .floor-line {
-
-    top: 27px;
-
-  }
-
-
-
-  .lift-nav-item {
-
-    width: 30px;
-
-    height: 30px;
-
-    font-size: 1rem;
-
-    gap: 10px;
-
-  }
-
-
-
-  .section img {
-
-    max-width: 250px;
-
-  }
-
-
-
-  .lottie-container {
-
-    max-width: 250px;
-
-    height: 250px;
-
-  }
-
-}
-
-
-
-/* Portrait and landscape specific adjustments */
-
-@media (orientation: portrait) and (max-width: 768px) {
-
-  .section {
-
-    flex-direction: column;
-
-    /* Tighten spacing in portrait mode */
-
-    gap: 5px;
-
-  }
-
-
-
-  .section img, .lottie-container {
-
-    width: 80%;
-
-    /* Reduce top and bottom margins */
-
-    margin-top: 5px;
-
-    margin-bottom: 5px;
-
-  }
-
-}
-
-
-
-@media (orientation: landscape) and (max-height: 700px) {
-
-  .section {
-
-    flex-direction: row;
-
-    padding-top: 50px;
-
-  }
-
-
-
-  .section img, .lottie-container {
-
-    max-height: 60vh;
-
-    width: 40%;
-
-    margin-top: 0;
-
-  }
-
-
-
-  .lottie-container {
-
-    height: 300px;
-
-  }
-
-
-
-  .floor-number {
-
-    top: 10px;
-
-    width: 30px;
-
-    height: 30px;
-
-    font-size: 1rem;
-
-  }
-
-
-
-  .floor-line {
-
-    top: 25px;
-
-  }
-
-
-
-  .lift-nav-item {
-
-    width: 30px;
-
-    height: 30px;
-
-    font-size: 0.9rem;
-
-    gap: 8px;
-
-  }
-
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            font-family: Arial, sans-serif;
+            background: black;
+            color: white;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        /* Intro section with GSAP parallax zoom effect */
+        #intro {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            background: black;
+        }
+
+        .intro-content {
+            text-align: center;
+            transform-origin: center center;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .intro-subtitle {
+          color: black;
+          font-size: clamp(0.8rem, 2vw, 1rem);
+          margin-bottom: 0.5rem;
+          position: relative;
+          z-index: 27;
+          top: 20px; /* Remove the previous top positioning */
+        }
+
+        .scroll-indicator {
+          color: black;
+          margin-top: 0.5rem;
+          animation: pulse 2s infinite;
+          position: relative;
+          z-index: 20;
+          font-size: clamp(1rem, 2vw, 1.2rem);
+          top: 20px; /* Remove the previous top positioning */
+        }
+
+        @keyframes pulse {
+            0% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(10px); opacity: 1; }
+            100% { transform: translateY(0); opacity: 0.5; }
+        }
+
+        /* Parallax space for scrolling */
+        .parallax-container {
+            height: 300vh; /* Space to scroll through before reaching the elevator */
+            position: relative;
+            z-index: 1;
+        }
+
+        #progressBar {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(200px, 50vw);
+            height: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            z-index: 1001;
+        }
+
+        #progress {
+            height: 100%;
+            width: 0%;
+            background: white;
+            border-radius: 5px;
+        }
+
+        /* Main elevator section */
+        .container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 1s ease-in-out, visibility 0s linear 1s;
+            z-index: 1000;
+        }
+
+        .container.show {
+            visibility: visible;
+            opacity: 1;
+            transition: opacity 1s ease-in-out, visibility 0s;
+        }
+
+        .section {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            padding: 20px;
+        }
+
+        .active {
+            opacity: 1;
+        }
+
+        .floor-line {
+            width: 80%;
+            height: 2px;
+            background: white;
+            margin-bottom: 10px;
+        }
+
+        .floor-number {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        @media (min-width: 768px) {
+            .content-container {
+                flex-direction: row;
+            }
+        }
+
+        .lottie-container {
+            width: 100%;
+            height: clamp(200px, 50vh, 400px);
+            max-width: 500px;
+        }
+
+        .content-container img {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+        }
+
+        .doors {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 2;
+        }
+
+        .door {
+            width: 50%;
+            height: 100%;
+            background: white;
+            border: 2px solid black;
+            position: absolute;
+            transition: transform 1s ease-in-out;
+        }
+
+        .left-door { left: 0; }
+        .right-door { right: 0; }
+        .closed .left-door { transform: translateX(0); }
+        .closed .right-door { transform: translateX(0); }
+        .open .left-door { transform: translateX(-100%); }
+        .open .right-door { transform: translateX(100%); }
+
+        .btn-container {
+            position: absolute;
+            left: clamp(10px, 5vw, 20px);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(5px, 2vw, 10px);
+            z-index: 20;
+        }
+
+        .btn-lift {
+            width: clamp(40px, 8vw, 60px);
+            height: clamp(40px, 8vw, 60px);
+            background: radial-gradient(circle, #666, #222);
+            border: 3px solid #fff;
+            border-radius: 50%;
+            font-size: clamp(0.8rem, 3vw, 1.2rem);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            z-index: 3;
+        }
+
+        .btn-lift:active {
+            background: radial-gradient(circle, #444, #111);
+        }
+
+        .btn-lift.active {
+            background: radial-gradient(circle, #4287f5, #2463c7);
+        }
+
+        .intro-img {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 15;
+            object-fit: cover;
+        }
+
+        .elevator-door-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 10;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .door-left, .door-right {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            background-color: white;
+            border: 2px solid black;
+        }
+
+        .door-left {
+            left: 0;
+            border-right: 3px solid black;
+        }
+
+        .door-right {
+            right: 0;
+            border-left: 3px solid black;
+        }
+
+        .text-container {
+          position: absolute;
+          z-index: 20;
+          bottom: 80px;
+          left: 0;
+          width: 100%;
+          text-align: center;
+          margin-top: 0; /* Remove the previous margin-top */
+        }
+
+        /* Touch controls for mobile */
+        .swipe-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            text-align: center;
+            display: none;
+            z-index: 1001;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 767px) {
+            .swipe-indicator {
+                display: block;
+            }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .btn-container {
+                left: 10px;
+            }
+
+            .intro-subtitle {
+                top: 80px;
+            }
+
+            .scroll-indicator {
+                top: 70px;
+            }
+
+            .text-container {
+                margin-top: 60vh;
+            }
+
+            .elevator-door-container {
+              width: 102.6%;
+            }
+
+            .intro-img {
+              width: 107.7%;
+            }
+        }
+
+        /* Tablet optimizations */
+        @media (min-width: 481px) and (max-width: 1024px) {
+            .btn-container {
+                left: 15px;
+            }
+        }
+
+        /* Landscape mode support */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .content-container {
+                flex-direction: row;
+            }
+
+            .lottie-container {
+                height: clamp(150px, 60vh, 300px);
+            }
+
+            .content-container img {
+                max-height: 60vh;
+                width: auto;
+            }
+
+            .text-container {
+                margin-top: 50vh;
+            }
+        }
