@@ -1,5 +1,4 @@
-
-        const intro = document.getElementById('intro');
+const intro = document.getElementById('intro');
         const introContent = document.querySelector('.intro-content');
         const scene = document.getElementById('scene');
         const progress = document.getElementById('progress');
@@ -9,7 +8,6 @@
         const doorLeft = document.querySelector('.door-left');
         const doorRight = document.querySelector('.door-right');
         const btnLifts = document.querySelectorAll('.btn-lift');
-        const swipeIndicator = document.querySelector('.swipe-indicator');
 
         let transitionComplete = false;
         let wheeling = false;
@@ -82,6 +80,11 @@
             return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         };
 
+        // Check if it's a mobile device
+        const isMobileDevice = () => {
+            return window.innerWidth < 768;
+        };
+
         // Modify completeTransition function
         function completeTransition() {
             if (transitionComplete) return;
@@ -104,20 +107,6 @@
                 intro.style.display = 'none';
                 parallaxContainer.style.display = 'none';
                 scene.classList.add('show');
-
-                // Show swipe indicator on mobile
-                if (isTouchDevice() && window.innerWidth < 768) {
-                    swipeIndicator.style.display = 'block';
-
-                    // Hide the indicator after 5 seconds
-                    setTimeout(() => {
-                        gsap.to(swipeIndicator, {
-                            opacity: 0,
-                            duration: 1,
-                            onComplete: () => { swipeIndicator.style.display = 'none'; }
-                        });
-                    }, 5000);
-                }
 
                 // Load animations if not already loaded
                 loadLottieAnimations();
@@ -275,11 +264,6 @@
             if (isTransitioning) return;
             isTransitioning = true;
 
-            // Hide swipe indicator if visible
-            if (swipeIndicator.style.display === 'block') {
-                swipeIndicator.style.display = 'none';
-            }
-
             // Clean up Lottie animations to prevent duplicates
             if (window.lottieAnimations) {
                 window.lottieAnimations.forEach(anim => {
@@ -346,7 +330,7 @@
                 setTimeout(() => {
                     setupGSAP();
                 }, 500);
-            }, 1000);
+            }, isMobileDevice() ? 500 : 1000); // Faster transition for mobile
         }
 
         // Load Lottie animations
@@ -403,6 +387,9 @@
             scene.classList.remove("open");
             scene.classList.add("closed");
 
+            // Get the transition time based on device type
+            const transitionTime = isMobileDevice() ? 500 : 1000;
+
             // Wait for doors to close
             setTimeout(() => {
                 // Change active section
@@ -423,8 +410,8 @@
 
                     // Reset transition flag
                     isTransitioning = false;
-                }, 1000);
-            }, 1000);
+                }, transitionTime);
+            }, transitionTime);
         }
 
         // Update floor indicators
@@ -439,27 +426,7 @@
             });
         }
 
-        // Handle window resize
-        function handleResize() {
-            // Adjust any size-dependent elements if needed
-            if (isTouchDevice() && window.innerWidth < 768 && transitionComplete) {
-                swipeIndicator.style.display = 'block';
-
-                // Fade out after a short delay
-                setTimeout(() => {
-                    gsap.to(swipeIndicator, {
-                        opacity: 0,
-                        duration: 1,
-                        onComplete: () => { swipeIndicator.style.display = 'none'; }
-                    });
-                }, 3000);
-            } else {
-                swipeIndicator.style.display = 'none';
-            }
-        }
-
         // Initialize on page load
         window.onload = () => {
             setupGSAP();
-            window.addEventListener('resize', handleResize);
         };
