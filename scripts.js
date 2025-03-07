@@ -284,81 +284,84 @@ function handleElevatorScroll(e) {
     }
 }
 
-// Function to go back to intro with zoom-out effect
+// Function to go back to intro with synchronized door animation and zoom effect
 function goBackToIntro() {
-    if (isTransitioning) return;
-    isTransitioning = true;
+  if (isTransitioning) return;
+  isTransitioning = true;
 
-    // Clean up Lottie animations to prevent duplicates
-    if (window.lottieAnimations) {
-        window.lottieAnimations.forEach(anim => {
-            if (anim) {
-                anim.destroy();
-            }
-        });
-        window.lottieAnimations = null;
-    }
+  // Clean up Lottie animations to prevent duplicates
+  if (window.lottieAnimations) {
+      window.lottieAnimations.forEach(anim => {
+          if (anim) {
+              anim.destroy();
+          }
+      });
+      window.lottieAnimations = null;
+  }
 
-    // Close elevator doors first
-    scene.classList.remove('open');
-    scene.classList.add('closed');
+  // MODIFIED: Immediately hide elevator scene
+  scene.classList.remove('show');
 
-    // Start transition back to intro
-    setTimeout(() => {
-        // Reset flags
-        transitionComplete = false;
-        isTransitioning = false;
+  // Reset flags
+  transitionComplete = false;
+  isTransitioning = false;
 
-        // Remove event listeners
-        window.removeEventListener('wheel', handleElevatorScroll);
-        if (isTouchDevice()) {
-            // FIXED: Remove all touch event listeners
-            window.removeEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
-            window.removeEventListener('touchmove', (e) => { e.preventDefault(); });
-            window.removeEventListener('touchend', handleTouchEnd);
-        }
-        window.removeEventListener('keydown', handleKeyboardNavigation);
+  // Remove event listeners
+  window.removeEventListener('wheel', handleElevatorScroll);
+  if (isTouchDevice()) {
+      window.removeEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
+      window.removeEventListener('touchmove', (e) => { e.preventDefault(); });
+      window.removeEventListener('touchend', handleTouchEnd);
+  }
+  window.removeEventListener('keydown', handleKeyboardNavigation);
 
-        // Hide elevator container
-        scene.classList.remove('show');
+  // Show intro elements but with doors initially open
+  intro.style.display = 'flex';
+  parallaxContainer.style.display = 'block';
+  progressBar.style.opacity = '1';
 
-        // Show intro elements
-        intro.style.display = 'flex';
-        parallaxContainer.style.display = 'block';
-        progressBar.style.opacity = '1';
+  // Start with doors fully open
+  gsap.set(doorLeft, { x: '-100%' });
+  gsap.set(doorRight, { x: '100%' });
 
-        // Reset doors position
-        gsap.set(doorLeft, { x: '-100%' });
-        gsap.set(doorRight, { x: '100%' });
+  // Create timeline for synchronized animation
+  const reverseTimeline = gsap.timeline();
 
-        // Create reverse zoom animation
-        const reverseTimeline = gsap.timeline();
+  // Set initial state (zoomed in)
+  gsap.set(introContent, { scale: 3 });
+  gsap.set(intro, { opacity: 0, visibility: "visible" });
 
-        // Set initial state (zoom in)
-        gsap.set(introContent, { scale: 3 });
-        gsap.set(intro, { opacity: 0, visibility: "visible" });
+  // Animate zoom out and door closing simultaneously
+  reverseTimeline
+      .to(introContent, {
+          scale: 1,
+          ease: "power1.inOut",
+          duration: 1
+      }, 0)
+      .to(intro, {
+          opacity: 1,
+          ease: "power1.inOut",
+          duration: 1
+      }, 0)
+      // Animate doors closing as intro zooms out
+      .to(doorLeft, {
+          x: '0%',  // Close left door
+          ease: "power1.inOut",
+          duration: 1
+      }, 0)
+      .to(doorRight, {
+          x: '0%',  // Close right door
+          ease: "power1.inOut",
+          duration: 1
+      }, 0);
 
-        // Animate zoom out
-        reverseTimeline
-            .to(introContent, {
-                scale: 1,
-                ease: "power1.inOut",
-                duration: 1
-            }, 0)
-            .to(intro, {
-                opacity: 1,
-                ease: "power1.inOut",
-                duration: 1
-            }, 0);
+  // Reset scroll position
+  window.scrollTo({ top: 0, behavior: 'auto' });
 
-        // Reset scroll position
-        window.scrollTo({ top: 0, behavior: 'auto' });
-
-        // Re-setup GSAP
-        setTimeout(() => {
-            setupGSAP();
-        }, 500);
-    }, isMobileDevice() ? 500 : 1000); // Faster transition for mobile
+  // Re-setup GSAP
+  setTimeout(() => {
+      setupGSAP();
+  }, 500);
 }
 
 // Load Lottie animations
