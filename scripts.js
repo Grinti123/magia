@@ -85,47 +85,61 @@ const isMobileDevice = () => {
     return window.innerWidth < 768;
 };
 
-// Modify completeTransition function
+// Modified completeTransition function to completely bypass door transition for first section
 function completeTransition() {
-    if (transitionComplete) return;
-    transitionComplete = true;
+  if (transitionComplete) return;
+  transitionComplete = true;
 
-    // Kill all ScrollTriggers
-    ScrollTrigger.getAll().forEach(st => st.kill());
+  // Kill all ScrollTriggers
+  ScrollTrigger.getAll().forEach(st => st.kill());
 
-    // Hide progress bar
-    gsap.to(progressBar, {
-        opacity: 0,
-        duration: 0.5
-    });
+  // Hide progress bar
+  gsap.to(progressBar, {
+      opacity: 0,
+      duration: 0.5
+  });
 
-    // Apply these changes immediately
-    gsap.set(intro, { opacity: 0, visibility: "hidden" });
+  // Apply these changes immediately
+  gsap.set(intro, { opacity: 0, visibility: "hidden" });
 
-    // Show elevator after intro animation
-    setTimeout(() => {
-        intro.style.display = 'none';
-        parallaxContainer.style.display = 'none';
-        scene.classList.add('show');
+  // Show elevator after intro animation
+  setTimeout(() => {
+      intro.style.display = 'none';
+      parallaxContainer.style.display = 'none';
 
-        // Load animations if not already loaded
-        loadLottieAnimations();
+      // IMPORTANT: Hide doors first before showing the scene
+      // This prevents any flash of the doors
+      const leftDoor = document.querySelector('.left-door');
+      const rightDoor = document.querySelector('.right-door');
 
-        // Open the doors after scene is visible
-        setTimeout(() => {
-            scene.classList.add('open');
+      // Temporarily hide doors
+      leftDoor.style.display = 'none';
+      rightDoor.style.display = 'none';
 
-            // Enable scroll wheel detection for elevator navigation
-            setupNavigation();
+      // Make scene visible with doors already open
+      scene.classList.add('show');
+      scene.classList.add('open');
 
-            // Enable body scroll for inside elevator
-            document.body.style.overflow = '';
+      // Load animations if not already loaded
+      loadLottieAnimations();
 
-            // Update floor button indicators
-            updateFloorIndicators(0);
-        }, 1000);
-    }, 500);
+      // Enable scroll wheel detection for elevator navigation
+      setupNavigation();
+
+      // Enable body scroll for inside elevator
+      document.body.style.overflow = '';
+
+      // Update floor button indicators
+      updateFloorIndicators(0);
+
+      // Re-enable doors after a short delay, so they work for navigation
+      setTimeout(() => {
+          leftDoor.style.display = '';
+          rightDoor.style.display = '';
+      }, 100);
+  }, 500);
 }
+
 
 // Setup navigation (scroll and touch)
 function setupNavigation() {
@@ -392,43 +406,43 @@ function loadLottieAnimations() {
     window.lottieAnimations = [anim1, anim2, anim3, anim4];
 }
 
-// Floor transition
+// Modified goToFloor function to ensure we use door transitions for navigation
 function goToFloor(index) {
-    if (isTransitioning || currentFloor === index) return;
-    isTransitioning = true;
+  if (isTransitioning || currentFloor === index) return;
+  isTransitioning = true;
 
-    // FIXED: Added console log for debugging
-    console.log("Going to floor:", index + 1);
+  // FIXED: Added console log for debugging
+  console.log("Going to floor:", index + 1);
 
-    // Close the doors
-    scene.classList.remove("open");
-    scene.classList.add("closed");
+  // Close the doors
+  scene.classList.remove("open");
+  scene.classList.add("closed");
 
-    // Get the transition time based on device type
-    const transitionTime = isMobileDevice() ? 500 : 1000;
+  // Get the transition time based on device type
+  const transitionTime = isMobileDevice() ? 500 : 1000;
 
-    // Wait for doors to close
-    setTimeout(() => {
-        // Change active section
-        document.querySelector(".active").classList.remove("active");
-        sections[index].classList.add("active");
+  // Wait for doors to close
+  setTimeout(() => {
+      // Change active section
+      document.querySelector(".active").classList.remove("active");
+      sections[index].classList.add("active");
 
-        // Update current floor
-        currentFloor = index;
+      // Update current floor
+      currentFloor = index;
 
-        // Update floor button indicators
-        updateFloorIndicators(currentFloor);
+      // Update floor button indicators
+      updateFloorIndicators(currentFloor);
 
-        // Wait for elevator to "move"
-        setTimeout(() => {
-            // Open doors
-            scene.classList.remove("closed");
-            scene.classList.add("open");
+      // Wait for elevator to "move"
+      setTimeout(() => {
+          // Open doors
+          scene.classList.remove("closed");
+          scene.classList.add("open");
 
-            // Reset transition flag
-            isTransitioning = false;
-        }, transitionTime);
-    }, transitionTime);
+          // Reset transition flag
+          isTransitioning = false;
+      }, transitionTime);
+  }, transitionTime);
 }
 
 // Update floor indicators
