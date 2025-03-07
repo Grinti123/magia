@@ -284,7 +284,7 @@ function handleElevatorScroll(e) {
     }
 }
 
-// Function to go back to intro with synchronized door animation and zoom effect
+// Modified goBackToIntro function with complete solution
 function goBackToIntro() {
   if (isTransitioning) return;
   isTransitioning = true;
@@ -299,39 +299,53 @@ function goBackToIntro() {
       window.lottieAnimations = null;
   }
 
-  // MODIFIED: Immediately hide elevator scene
-  scene.classList.remove('show');
+  // Hide all sections that aren't section1 immediately
+  sections.forEach(section => {
+      if (section.id !== 'section1') {
+          section.style.display = 'none';
+      }
+  });
 
-  // Reset flags
-  transitionComplete = false;
-  isTransitioning = false;
+  // Get reference to section 1
+  const section1 = document.getElementById('section1');
 
-  // Remove event listeners
-  window.removeEventListener('wheel', handleElevatorScroll);
-  if (isTouchDevice()) {
-      window.removeEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
-      window.removeEventListener('touchmove', (e) => { e.preventDefault(); });
-      window.removeEventListener('touchend', handleTouchEnd);
-  }
-  window.removeEventListener('keydown', handleKeyboardNavigation);
-
-  // Show intro elements but with doors initially open
+  // Prepare the intro elements before animation starts but keep them invisible
   intro.style.display = 'flex';
+  gsap.set(intro, { opacity: 0, visibility: "hidden" });
   parallaxContainer.style.display = 'block';
-  progressBar.style.opacity = '1';
+  progressBar.style.opacity = '0'; // Keep invisible initially
 
-  // Start with doors fully open
+  // Start with doors fully open but hidden
   gsap.set(doorLeft, { x: '-100%' });
   gsap.set(doorRight, { x: '100%' });
 
-  // Create timeline for synchronized animation
-  const reverseTimeline = gsap.timeline();
+  // Create a zoom-out effect for section 1
+  gsap.to(section1, {
+      scale: 0.5,
+      opacity: 0,
+      duration: 1,
+      ease: "power1.inOut",
+      onComplete: () => {
+          // CRITICAL: Hide the entire elevator container immediately
+          scene.style.visibility = 'hidden';
 
-  // Set initial state (zoomed in)
+          // Start intro transition now that section1 is completely gone
+          showIntroElements();
+      }
+  });
+}
+
+// Function to show intro elements once section1 is gone
+function showIntroElements() {
+  // Make intro visible immediately
+  gsap.set(intro, { visibility: "visible" });
+  gsap.set(progressBar, { opacity: 1 });
+
+  // Set initial state for intro (zoomed in)
   gsap.set(introContent, { scale: 3 });
-  gsap.set(intro, { opacity: 0, visibility: "visible" });
 
-  // Animate zoom out and door closing simultaneously
+  // Animate intro content and doors
+  const reverseTimeline = gsap.timeline();
   reverseTimeline
       .to(introContent, {
           scale: 1,
@@ -355,13 +369,99 @@ function goBackToIntro() {
           duration: 1
       }, 0);
 
-  // Reset scroll position
-  window.scrollTo({ top: 0, behavior: 'auto' });
-
-  // Re-setup GSAP
+  // After the intro animation completes, finish cleanup
   setTimeout(() => {
+      // Officially remove elevator scene from DOM flow
+      scene.classList.remove('show');
+
+      // Restore section1 but keep it invisible
+      const section1 = document.getElementById('section1');
+      gsap.set(section1, { scale: 1, opacity: 1 });
+
+      // Make other sections visible again for next time
+      sections.forEach(section => {
+          section.style.display = '';
+      });
+
+      // Reset flags
+      transitionComplete = false;
+      isTransitioning = false;
+
+      // Remove event listeners
+      window.removeEventListener('wheel', handleElevatorScroll);
+      if (isTouchDevice()) {
+          window.removeEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
+          window.removeEventListener('touchmove', (e) => { e.preventDefault(); });
+          window.removeEventListener('touchend', handleTouchEnd);
+      }
+      window.removeEventListener('keydown', handleKeyboardNavigation);
+
+      // Reset scroll position
+      window.scrollTo({ top: 0, behavior: 'auto' });
+
+      // Re-setup GSAP
       setupGSAP();
-  }, 500);
+
+      // Finally, restore scene visibility for next time
+      scene.style.visibility = '';
+  }, 1000);
+}
+
+// Separate function to handle the intro transition
+function startIntroTransition() {
+  // Animate intro content and doors
+  const reverseTimeline = gsap.timeline();
+  reverseTimeline
+      .to(introContent, {
+          scale: 1,
+          ease: "power1.inOut",
+          duration: 1
+      }, 0)
+      .to(intro, {
+          opacity: 1,
+          ease: "power1.inOut",
+          duration: 1
+      }, 0)
+      // Animate doors closing as intro zooms out
+      .to(doorLeft, {
+          x: '0%',  // Close left door
+          ease: "power1.inOut",
+          duration: 1
+      }, 0)
+      .to(doorRight, {
+          x: '0%',  // Close right door
+          ease: "power1.inOut",
+          duration: 1
+      }, 0);
+
+  // After the animation is complete, finish cleanup
+  setTimeout(() => {
+      // Hide elevator scene completely
+      scene.classList.remove('show');
+
+      // Reset Section 1 properties now that it's completely hidden
+      const section1 = document.getElementById('section1');
+      gsap.set(section1, { scale: 1, opacity: 1 });
+
+      // Reset flags
+      transitionComplete = false;
+      isTransitioning = false;
+
+      // Remove event listeners
+      window.removeEventListener('wheel', handleElevatorScroll);
+      if (isTouchDevice()) {
+          window.removeEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
+          window.removeEventListener('touchmove', (e) => { e.preventDefault(); });
+          window.removeEventListener('touchend', handleTouchEnd);
+      }
+      window.removeEventListener('keydown', handleKeyboardNavigation);
+
+      // Reset scroll position
+      window.scrollTo({ top: 0, behavior: 'auto' });
+
+      // Re-setup GSAP
+      setupGSAP();
+  }, 1000);
 }
 
 // Load Lottie animations
