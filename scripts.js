@@ -167,7 +167,6 @@ function completeTransition() {
   }, 500);
 }
 
-
 // Setup navigation (scroll and touch)
 function setupNavigation() {
     // Mouse wheel support
@@ -202,7 +201,7 @@ function handleTouchEnd(e) {
     const swipeDistance = touchStartY - touchEndY;
 
     // Threshold to detect swipe (lowered for better response)
-    if (Math.abs(swipeDistance) > 30) {
+    if (Math.abs(swipeDistance) > 10) { // Changed from 20 to 10
         // Prevent default to stop any unwanted behaviors
         e.preventDefault();
 
@@ -230,7 +229,7 @@ function handleTouchEnd(e) {
             clearTimeout(scrollTimeout);
             scrollTimeout = setTimeout(() => {
                 isScrolling = false;
-            }, 1000);
+            }, 200); // Changed from 500 to 200
         }
     }
 }
@@ -264,7 +263,7 @@ function handleKeyboardNavigation(e) {
             clearTimeout(scrollTimeout);
             scrollTimeout = setTimeout(() => {
                 isScrolling = false;
-            }, 1000);
+            }, 200); // Changed from 500 to 200
         }
     }
 
@@ -307,7 +306,7 @@ function handleElevatorScroll(e) {
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(() => {
             isScrolling = false;
-        }, 1000);
+        }, 200); // Changed from 500 to 200
     }
 }
 
@@ -549,7 +548,7 @@ function goToFloor(index) {
   scene.classList.add("closed");
 
   // Get the transition time based on device type
-  const transitionTime = isMobileDevice() ? 500 : 1000;
+  const transitionTime = isMobileDevice() ? 300 : 1000; // Changed from 500 to 300 for mobile
 
   // Wait for doors to close
   setTimeout(() => {
