@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAGIA</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.9.6/lottie.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            font-family: Arial, sans-serif;
+            background: black;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* Main elevator container */
+        .container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .section {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            padding: 20px;
+        }
+
+        .active {
+            opacity: 1;
+        }
+
+        .floor-line {
+            width: 80%;
+            height: 2px;
+            background: white;
+            margin-bottom: 10px;
+        }
+
+        .floor-number {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .content-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        @media (min-width: 768px) {
+            .content-container {
+                flex-direction: row;
+            }
+        }
+
+        .lottie-container {
+            width: 100%;
+            height: clamp(200px, 50vh, 400px);
+            max-width: 500px;
+        }
+
+        .content-container img {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+        }
+
+        /* Elevator doors */
+        .doors {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 100;
+        }
+
+        .door {
+            width: 50%;
+            height: 100%;
+            background: white;
+            border: 2px solid black;
+            position: absolute;
+            transition: transform 1s ease-in-out;
+        }
+
+        .left-door { left: 0; }
+        .right-door { right: 0; }
+        .closed .left-door { transform: translateX(0); }
+        .closed .right-door { transform: translateX(0); }
+        .open .left-door { transform: translateX(-100%); }
+        .open .right-door { transform: translateX(100%); }
+
+        /* Elevator buttons */
+        .btn-container {
+            position: absolute;
+            left: clamp(10px, 5vw, 20px);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: clamp(5px, 2vw, 10px);
+            z-index: 200;
+        }
+
+        .btn-lift {
+            width: clamp(40px, 8vw, 60px);
+            height: clamp(40px, 8vw, 60px);
+            background: radial-gradient(circle, #666, #222);
+            border: 3px solid #fff;
+            border-radius: 50%;
+            font-size: clamp(0.8rem, 3vw, 1.2rem);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            z-index: 300;
+        }
+
+        .btn-lift:active {
+            background: radial-gradient(circle, #444, #111);
+        }
+
+        .btn-lift.active {
+            background: radial-gradient(circle, #4287f5, #2463c7);
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 767px) {
+            .door {
+                transition: transform 0.5s ease-in-out;
+            }
+        }
+
+        /* Landscape mode support */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .content-container {
+                flex-direction: row;
+            }
+
+            .lottie-container {
+                height: clamp(150px, 60vh, 300px);
+            }
+
+            .content-container img {
+                max-height: 60vh;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Main elevator content -->
+    <div class="container closed" id="scene">
+        <div class="doors">
+            <div class="door left-door"></div>
+            <div class="door right-door"></div>
+        </div>
+        <section id="section1" class="section active">
+            <div class="floor-line"></div>
+            <div class="floor-number">1</div>
+            <div class="content-container">
+                <img src="Artboard 221@4x.png" alt="Artboard 7">
+                <div id="dottie1" class="lottie-container"></div>
+            </div>
+        </section>
+        <section id="section2" class="section">
+            <div class="floor-line"></div>
+            <div class="floor-number">2</div>
+            <div class="content-container">
+                <div id="dottie2" class="lottie-container"></div>
+                <img src="2@4x.png" alt="">
+            </div>
+        </section>
+        <section id="section3" class="section">
+            <div class="floor-line"></div>
+            <div class="floor-number">3</div>
+            <div class="content-container">
+                <img src="Artboard 231@4x.png" alt="Artboard 9">
+                <div id="dottie3" class="lottie-container"></div>
+            </div>
+        </section>
+        <section id="section4" class="section">
+            <div class="floor-line"></div>
+            <div class="floor-number">4</div>
+            <div class="content-container">
+                <div id="dottie4" class="lottie-container"></div>
+                <img src="Artboard 20.svg" alt="">
+            </div>
+        </section>
+        <div class="btn-container">
+            <button class="btn-lift active" onclick="goToFloor(0)">1</button>
+            <button class="btn-lift" onclick="goToFloor(1)">2</button>
+            <button class="btn-lift" onclick="goToFloor(2)">3</button>
+            <button class="btn-lift" onclick="goToFloor(3)">4</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize variables
+        const scene = document.getElementById('scene');
+        const sections = document.querySelectorAll('.section');
+        const btnLifts = document.querySelectorAll('.btn-lift');
+        let currentFloor = 0;
+        let isTransitioning = false;
+
+        // Initialize the page
+        window.onload = () => {
+            // Start with open doors
+            setTimeout(() => {
+                scene.classList.add('open');
+                loadLottieAnimations();
+            }, 500);
+        };
+
+        // Load Lottie animations for all floors
+        function loadLottieAnimations() {
+            // Clear any existing animations first
+            document.getElementById("dottie1").innerHTML = "";
+            document.getElementById("dottie2").innerHTML = "";
+            document.getElementById("dottie3").innerHTML = "";
+            document.getElementById("dottie4").innerHTML = "";
+
+            // Initialize new animation instances
+            const anim1 = lottie.loadAnimation({
+                container: document.getElementById("dottie1"),
+                renderer: "svg",
+                loop: true,
+                autoplay: true,
+                path: "./jsons/piso1.json"
+            });
+
+            const anim2 = lottie.loadAnimation({
+                container: document.getElementById("dottie2"),
+                renderer: "svg",
+                loop: true,
+                autoplay: true,
+                path: "./jsons/piso2.json"
+            });
+
+            const anim3 = lottie.loadAnimation({
+                container: document.getElementById("dottie3"),
+                renderer: "svg",
+                loop: true,
+                autoplay: true,
+                path: "./jsons/piso3.json"
+            });
+
+            const anim4 = lottie.loadAnimation({
+                container: document.getElementById("dottie4"),
+                renderer: "svg",
+                loop: true,
+                autoplay: true,
+                path: "./jsons/piso4.json"
+            });
+
+            // Store animation references
+            window.lottieAnimations = [anim1, anim2, anim3, anim4];
+        }
+
+        // Function to navigate to a floor
+        function goToFloor(index) {
+            if (isTransitioning || currentFloor === index) return;
+            isTransitioning = true;
+
+            // Close the doors
+            scene.classList.remove("open");
+            scene.classList.add("closed");
+
+            // Get transition time based on device type
+            const transitionTime = window.innerWidth < 768 ? 500 : 1000;
+
+            // Wait for doors to close
+            setTimeout(() => {
+                // Change active section
+                document.querySelector(".active").classList.remove("active");
+                sections[index].classList.add("active");
+
+                // Update current floor
+                currentFloor = index;
+
+                // Update floor button indicators
+                btnLifts.forEach((btn, i) => {
+                    if (i === currentFloor) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+
+                // Wait for elevator to "move"
+                setTimeout(() => {
+                    // Open doors
+                    scene.classList.remove("closed");
+                    scene.classList.add("open");
+
+                    // Reset transition flag
+                    isTransitioning = false;
+                }, transitionTime);
+            }, transitionTime);
+        }
+
+        // Add keyboard navigation support
+        document.addEventListener('keydown', (e) => {
+            if (isTransitioning) return;
+
+            // Arrow up/down keys
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+
+                if (e.key === 'ArrowDown') {
+                    // Go to next floor if not at last floor
+                    if (currentFloor < sections.length - 1) {
+                        goToFloor(currentFloor + 1);
+                    }
+                } else {
+                    // Go to previous floor
+                    if (currentFloor > 0) {
+                        goToFloor(currentFloor - 1);
+                    }
+                }
+            }
+
+            // Number keys 1-4 for direct floor access
+            if (e.key >= '1' && e.key <= '4') {
+                const floorIndex = parseInt(e.key) - 1;
+                if (floorIndex >= 0 && floorIndex < sections.length) {
+                    goToFloor(floorIndex);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

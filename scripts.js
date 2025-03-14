@@ -1,3 +1,30 @@
+// Preloader with progress indicator
+document.addEventListener('DOMContentLoaded', function() {
+  const preloader = document.getElementById('preloader');
+  const progressBar = document.querySelector('.progress-bar');
+  let width = 0;
+
+  // Progress bar animation
+  const interval = setInterval(function() {
+      if (width >= 100) {
+          clearInterval(interval);
+
+          // Hide preloader after reaching 100%
+          setTimeout(function() {
+              preloader.classList.add('hidden');
+
+              // Remove preloader from DOM after transition completes
+              setTimeout(function() {
+                  preloader.style.display = 'none';
+              }, 500);
+          }, 300);
+      } else {
+          width++;
+          progressBar.style.width = width + '%';
+      }
+  }, 30); // Adjust timing as needed (30ms = ~3 seconds to reach 100%)
+});
+
 const intro = document.getElementById('intro');
 const introContent = document.querySelector('.intro-content');
 const scene = document.getElementById('scene');
@@ -23,56 +50,56 @@ gsap.registerPlugin(ScrollTrigger);
 
 // Setup GSAP animations
 const setupGSAP = () => {
-    // Create timeline for intro animations
-    const introTimeline = gsap.timeline({
-        scrollTrigger: {
-            trigger: ".parallax-container",
-            start: "top top",
-            end: "bottom bottom",
-            scrub: true,
-            onUpdate: (self) => {
-                // Update progress bar
-                gsap.to(progress, {
-                    width: `${self.progress * 100}%`,
-                    duration: 0.1,
-                    ease: "none"
-                });
+  // Create timeline for intro animations with FASTER scrub value
+  const introTimeline = gsap.timeline({
+      scrollTrigger: {
+          trigger: ".parallax-container",
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.5, // Reduced from 1 to 0.5 for faster response
+          onUpdate: (self) => {
+              // Update progress bar
+              gsap.to(progress, {
+                  width: `${self.progress * 100}%`,
+                  duration: 0.1,
+                  ease: "none"
+              });
 
-                // Animate the doors based on scroll progress
-                gsap.to(doorLeft, {
-                    x: `-${self.progress * 100}%`,
-                    duration: 0.1,
-                    ease: "none"
-                });
+              // Animate the doors based on scroll progress
+              gsap.to(doorLeft, {
+                  x: `-${self.progress * 100}%`,
+                  duration: 0.1,
+                  ease: "none"
+              });
 
-                gsap.to(doorRight, {
-                    x: `${self.progress * 100}%`,
-                    duration: 0.1,
-                    ease: "none"
-                });
+              gsap.to(doorRight, {
+                  x: `${self.progress * 100}%`,
+                  duration: 0.1,
+                  ease: "none"
+              });
 
-                // Complete transition when progress reaches 98%
-                if (self.progress >= 0.98 && !transitionComplete) {
-                    // Immediately hide the intro to prevent flashing
-                    gsap.set(intro, { opacity: 0, visibility: "hidden" });
-                    completeTransition();
-                }
-            }
-        }
-    });
+              // Complete transition when progress reaches 90% (instead of 98%)
+              if (self.progress >= 0.90 && !transitionComplete) {
+                  // Immediately hide the intro to prevent flashing
+                  gsap.set(intro, { opacity: 0, visibility: "hidden" });
+                  completeTransition();
+              }
+          }
+      }
+  });
 
-    // Add animations to timeline
-    introTimeline
-        .to(introContent, {
-            scale: 3,
-            ease: "power1.inOut",
-            duration: 1
-        }, 0)
-        .to(intro, {
-            opacity: 0,
-            ease: "power1.inOut",
-            duration: 1
-        }, 0.5);
+  // Add animations to timeline with FASTER duration
+  introTimeline
+      .to(introContent, {
+          scale: 5,
+          ease: "power2.in", // Changed from power1.inOut to power2.in for a quicker feel
+          duration: 0.5      // Reduced from 1 to 0.5 for faster zoom
+      }, 0)
+      .to(intro, {
+          opacity: 0,
+          ease: "power2.in", // Changed from power1.inOut to power2.in
+          duration: 0.5      // Reduced from 1 to 0.5
+      }, 0.3);  // Start fade out earlier (changed from 0.5 to 0.3)
 };
 
 // Check if it's a touch device
