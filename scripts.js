@@ -1,6 +1,6 @@
 // Preloader with progress indicator
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
 
   const preloader = document.getElementById('preloader');
 
@@ -12,39 +12,39 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Progress bar animation
 
-  const interval = setInterval(function() {
+  const interval = setInterval(function () {
 
-      if (width >= 100) {
+    if (width >= 100) {
 
-          clearInterval(interval);
-
-
-
-          // Hide preloader after reaching 100%
-
-          setTimeout(function() {
-
-              preloader.classList.add('hidden');
+      clearInterval(interval);
 
 
 
-              // Remove preloader from DOM after transition completes
+      // Hide preloader after reaching 100%
 
-              setTimeout(function() {
+      setTimeout(function () {
 
-                  preloader.style.display = 'none';
+        preloader.classList.add('hidden');
 
-              }, 500);
 
-          }, 300);
 
-      } else {
+        // Remove preloader from DOM after transition completes
 
-          width++;
+        setTimeout(function () {
 
-          progressBar.style.width = width + '%';
+          preloader.style.display = 'none';
 
-      }
+        }, 500);
+
+      }, 300);
+
+    } else {
+
+      width++;
+
+      progressBar.style.width = width + '%';
+
+    }
 
   }, 30); // Adjust timing as needed (30ms = ~3 seconds to reach 100%)
 
@@ -101,107 +101,63 @@ gsap.registerPlugin(ScrollTrigger);
 // Setup GSAP animations
 
 const setupGSAP = () => {
+  // Detect if we're on mobile
+  const isMobile = window.innerWidth < 768;
 
-  // Create timeline for intro animations with FASTER scrub value
-
+  // Create timeline for intro animations with even FASTER scrub value for mobile
   const introTimeline = gsap.timeline({
+    scrollTrigger: {
+      trigger: ".parallax-container",
+      start: "top top",
+      end: "bottom bottom",
+      scrub: isMobile ? 0.2 : 0.5, // Much faster for mobile (0.2 instead of 0.5)
+      onUpdate: (self) => {
+        // Update progress bar
+        gsap.to(progress, {
+          width: `${self.progress * 100}%`,
+          duration: 0.1,
+          ease: "none"
+        });
 
-      scrollTrigger: {
+        // Animate the doors based on scroll progress
+        gsap.to(doorLeft, {
+          x: `-${self.progress * 100}%`,
+          duration: 0.1,
+          ease: "none"
+        });
 
-          trigger: ".parallax-container",
+        gsap.to(doorRight, {
+          x: `${self.progress * 100}%`,
+          duration: 0.1,
+          ease: "none"
+        });
 
-          start: "top top",
-
-          end: "bottom bottom",
-
-          scrub: 0.5, // Reduced from 1 to 0.5 for faster response
-
-          onUpdate: (self) => {
-
-              // Update progress bar
-
-              gsap.to(progress, {
-
-                  width: `${self.progress * 100}%`,
-
-                  duration: 0.1,
-
-                  ease: "none"
-
-              });
-
-
-
-              // Animate the doors based on scroll progress
-
-              gsap.to(doorLeft, {
-
-                  x: `-${self.progress * 100}%`,
-
-                  duration: 0.1,
-
-                  ease: "none"
-
-              });
-
-
-
-              gsap.to(doorRight, {
-
-                  x: `${self.progress * 100}%`,
-
-                  duration: 0.1,
-
-                  ease: "none"
-
-              });
-
-
-
-              // Complete transition when progress reaches 90% (instead of 98%)
-
-              if (self.progress >= 0.90 && !transitionComplete) {
-
-                  // Immediately hide the intro to prevent flashing
-
-                  gsap.set(intro, { opacity: 0, visibility: "hidden" });
-
-                  completeTransition();
-
-              }
-
-          }
-
+        // Complete transition when progress reaches even lower threshold on mobile
+        if ((isMobile ? self.progress >= 0.75 : self.progress >= 0.90) && !transitionComplete) {
+          // Immediately hide the intro to prevent flashing
+          gsap.set(intro, { opacity: 0, visibility: "hidden" });
+          completeTransition();
+        }
       }
-
+    }
   });
 
 
 
   // Add animations to timeline with FASTER duration
 
+  // Add animations to timeline with FASTER duration for mobile
   introTimeline
-
-      .to(introContent, {
-
-          scale: 5,
-
-          ease: "power2.in", // Changed from power1.inOut to power2.in for a quicker feel
-
-          duration: 0.5      // Reduced from 1 to 0.5 for faster zoom
-
-      }, 0)
-
-      .to(intro, {
-
-          opacity: 0,
-
-          ease: "power2.in", // Changed from power1.inOut to power2.in
-
-          duration: 0.5      // Reduced from 1 to 0.5
-
-      }, 0.3);  // Start fade out earlier (changed from 0.5 to 0.3)
-
+    .to(introContent, {
+      scale: 5,
+      ease: "power2.in",
+      duration: isMobile ? 0.3 : 0.5 // Even faster for mobile (0.3 instead of 0.5)
+    }, 0)
+    .to(intro, {
+      opacity: 0,
+      ease: "power2.in",
+      duration: isMobile ? 0.3 : 0.5 // Even faster for mobile (0.3 instead of 0.5)
+    }, isMobile ? 0.2 : 0.3); // Start fade out even earlier on mobile
 };
 
 
@@ -210,7 +166,7 @@ const setupGSAP = () => {
 
 const isTouchDevice = () => {
 
-    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
 };
 
@@ -220,7 +176,7 @@ const isTouchDevice = () => {
 
 const isMobileDevice = () => {
 
-    return window.innerWidth < 768;
+  return window.innerWidth < 768;
 
 };
 
@@ -246,9 +202,9 @@ function completeTransition() {
 
   gsap.to(progressBar, {
 
-      opacity: 0,
+    opacity: 0,
 
-      duration: 0.5
+    duration: 0.5
 
   });
 
@@ -264,71 +220,71 @@ function completeTransition() {
 
   setTimeout(() => {
 
-      intro.style.display = 'none';
+    intro.style.display = 'none';
 
-      parallaxContainer.style.display = 'none';
-
-
-
-      // IMPORTANT: Hide doors first before showing the scene
-
-      // This prevents any flash of the doors
-
-      const leftDoor = document.querySelector('.left-door');
-
-      const rightDoor = document.querySelector('.right-door');
+    parallaxContainer.style.display = 'none';
 
 
 
-      // Temporarily hide doors
+    // IMPORTANT: Hide doors first before showing the scene
 
-      leftDoor.style.display = 'none';
+    // This prevents any flash of the doors
 
-      rightDoor.style.display = 'none';
+    const leftDoor = document.querySelector('.left-door');
 
-
-
-      // Make scene visible with doors already open
-
-      scene.classList.add('show');
-
-      scene.classList.add('open');
+    const rightDoor = document.querySelector('.right-door');
 
 
 
-      // Load animations if not already loaded
+    // Temporarily hide doors
 
-      loadLottieAnimations();
+    leftDoor.style.display = 'none';
 
-
-
-      // Enable scroll wheel detection for elevator navigation
-
-      setupNavigation();
+    rightDoor.style.display = 'none';
 
 
 
-      // Enable body scroll for inside elevator
+    // Make scene visible with doors already open
 
-      document.body.style.overflow = '';
+    scene.classList.add('show');
 
-
-
-      // Update floor button indicators
-
-      updateFloorIndicators(0);
+    scene.classList.add('open');
 
 
 
-      // Re-enable doors after a short delay, so they work for navigation
+    // Load animations if not already loaded
 
-      setTimeout(() => {
+    loadLottieAnimations();
 
-          leftDoor.style.display = '';
 
-          rightDoor.style.display = '';
 
-      }, 100);
+    // Enable scroll wheel detection for elevator navigation
+
+    setupNavigation();
+
+
+
+    // Enable body scroll for inside elevator
+
+    document.body.style.overflow = '';
+
+
+
+    // Update floor button indicators
+
+    updateFloorIndicators(0);
+
+
+
+    // Re-enable doors after a short delay, so they work for navigation
+
+    setTimeout(() => {
+
+      leftDoor.style.display = '';
+
+      rightDoor.style.display = '';
+
+    }, 100);
 
   }, 500);
 
@@ -340,49 +296,49 @@ function completeTransition() {
 
 function setupNavigation() {
 
-    // Mouse wheel support
+  // Mouse wheel support
 
-    window.addEventListener('wheel', handleElevatorScroll, { passive: false });
-
-
-
-    // Touch support for mobile
-
-    if (isTouchDevice()) {
-
-        // FIXED: Changed touchstart event to passive false
-
-        window.addEventListener('touchstart', (e) => {
-
-            touchStartY = e.touches[0].clientY;
-
-        }, { passive: false });
+  window.addEventListener('wheel', handleElevatorScroll, { passive: false });
 
 
 
-        // FIXED: Added touchmove with passive false to prevent default behavior
+  // Touch support for mobile
 
-        window.addEventListener('touchmove', (e) => {
+  if (isTouchDevice()) {
 
-            if (isTransitioning || !transitionComplete) return;
+    // FIXED: Changed touchstart event to passive false
 
-            // Prevent default to stop page scrolling during swipe
+    window.addEventListener('touchstart', (e) => {
 
-            e.preventDefault();
+      touchStartY = e.touches[0].clientY;
 
-        }, { passive: false });
-
-
-
-        window.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-    }
+    }, { passive: false });
 
 
 
-    // Keyboard support for accessibility
+    // FIXED: Added touchmove with passive false to prevent default behavior
 
-    window.addEventListener('keydown', handleKeyboardNavigation);
+    window.addEventListener('touchmove', (e) => {
+
+      if (isTransitioning || !transitionComplete) return;
+
+      // Prevent default to stop page scrolling during swipe
+
+      e.preventDefault();
+
+    }, { passive: false });
+
+
+
+    window.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+  }
+
+
+
+  // Keyboard support for accessibility
+
+  window.addEventListener('keydown', handleKeyboardNavigation);
 
 }
 
@@ -392,79 +348,79 @@ function setupNavigation() {
 
 function handleTouchEnd(e) {
 
-    if (isTransitioning || !transitionComplete) return;
+  if (isTransitioning || !transitionComplete) return;
 
 
 
-    touchEndY = e.changedTouches[0].clientY;
+  touchEndY = e.changedTouches[0].clientY;
 
-    const swipeDistance = touchStartY - touchEndY;
-
-
-
-    // Threshold to detect swipe (lowered for better response)
-
-    if (Math.abs(swipeDistance) > 10) { // Changed from 20 to 10
-
-        // Prevent default to stop any unwanted behaviors
-
-        e.preventDefault();
+  const swipeDistance = touchStartY - touchEndY;
 
 
 
-        if (!isScrolling) {
+  // Threshold to detect swipe (lowered for better response)
 
-            isScrolling = true;
+  if (Math.abs(swipeDistance) > 10) { // Changed from 20 to 10
 
+    // Prevent default to stop any unwanted behaviors
 
-
-            // FIXED: Added console log for debugging
-
-            console.log("Swipe detected: ", swipeDistance > 0 ? "UP" : "DOWN");
+    e.preventDefault();
 
 
 
-            if (swipeDistance > 0) {
+    if (!isScrolling) {
 
-                // Swipe up - go to next floor if not at last floor
-
-                if (currentFloor < sections.length - 1) {
-
-                    goToFloor(currentFloor + 1);
-
-                }
-
-            } else {
-
-                // Swipe down - go to previous floor or intro
-
-                if (currentFloor > 0) {
-
-                    goToFloor(currentFloor - 1);
-
-                } else {
-
-                    goBackToIntro();
-
-                }
-
-            }
+      isScrolling = true;
 
 
 
-            // Debounce events
+      // FIXED: Added console log for debugging
 
-            clearTimeout(scrollTimeout);
+      console.log("Swipe detected: ", swipeDistance > 0 ? "UP" : "DOWN");
 
-            scrollTimeout = setTimeout(() => {
 
-                isScrolling = false;
 
-            }, 200); // Changed from 500 to 200
+      if (swipeDistance > 0) {
+
+        // Swipe up - go to next floor if not at last floor
+
+        if (currentFloor < sections.length - 1) {
+
+          goToFloor(currentFloor + 1);
 
         }
 
+      } else {
+
+        // Swipe down - go to previous floor or intro
+
+        if (currentFloor > 0) {
+
+          goToFloor(currentFloor - 1);
+
+        } else {
+
+          goBackToIntro();
+
+        }
+
+      }
+
+
+
+      // Debounce events
+
+      clearTimeout(scrollTimeout);
+
+      scrollTimeout = setTimeout(() => {
+
+        isScrolling = false;
+
+      }, 200); // Changed from 500 to 200
+
     }
+
+  }
 
 }
 
@@ -474,81 +430,81 @@ function handleTouchEnd(e) {
 
 function handleKeyboardNavigation(e) {
 
-    if (isTransitioning) return;
+  if (isTransitioning) return;
 
 
 
-    // Arrow up/down keys
+  // Arrow up/down keys
 
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
 
-        e.preventDefault();
-
-
-
-        if (!isScrolling) {
-
-            isScrolling = true;
+    e.preventDefault();
 
 
 
-            if (e.key === 'ArrowDown') {
+    if (!isScrolling) {
 
-                // Go to next floor if not at last floor
-
-                if (currentFloor < sections.length - 1) {
-
-                    goToFloor(currentFloor + 1);
-
-                }
-
-            } else {
-
-                // Go to previous floor or intro
-
-                if (currentFloor > 0) {
-
-                    goToFloor(currentFloor - 1);
-
-                } else {
-
-                    goBackToIntro();
-
-                }
-
-            }
+      isScrolling = true;
 
 
 
-            // Debounce events
+      if (e.key === 'ArrowDown') {
 
-            clearTimeout(scrollTimeout);
+        // Go to next floor if not at last floor
 
-            scrollTimeout = setTimeout(() => {
+        if (currentFloor < sections.length - 1) {
 
-                isScrolling = false;
-
-            }, 200); // Changed from 500 to 200
+          goToFloor(currentFloor + 1);
 
         }
 
-    }
+      } else {
 
+        // Go to previous floor or intro
 
+        if (currentFloor > 0) {
 
-    // Number keys 1-4 for direct floor access
+          goToFloor(currentFloor - 1);
 
-    if (e.key >= '1' && e.key <= '4') {
+        } else {
 
-        const floorIndex = parseInt(e.key) - 1;
-
-        if (floorIndex >= 0 && floorIndex < sections.length) {
-
-            goToFloor(floorIndex);
+          goBackToIntro();
 
         }
 
+      }
+
+
+
+      // Debounce events
+
+      clearTimeout(scrollTimeout);
+
+      scrollTimeout = setTimeout(() => {
+
+        isScrolling = false;
+
+      }, 200); // Changed from 500 to 200
+
     }
+
+  }
+
+
+
+  // Number keys 1-4 for direct floor access
+
+  if (e.key >= '1' && e.key <= '4') {
+
+    const floorIndex = parseInt(e.key) - 1;
+
+    if (floorIndex >= 0 && floorIndex < sections.length) {
+
+      goToFloor(floorIndex);
+
+    }
+
+  }
 
 }
 
@@ -558,65 +514,65 @@ function handleKeyboardNavigation(e) {
 
 function handleElevatorScroll(e) {
 
-    if (isTransitioning) return;
+  if (isTransitioning) return;
 
 
 
-    e.preventDefault();
+  e.preventDefault();
 
 
 
-    if (!isScrolling) {
+  if (!isScrolling) {
 
-        isScrolling = true;
-
-
-
-        // Determine scroll direction
-
-        if (e.deltaY > 0) {
-
-            // Scrolling down - go to next floor if not at last floor
-
-            if (currentFloor < sections.length - 1) {
-
-                goToFloor(currentFloor + 1);
-
-            }
-
-        } else {
-
-            // Scrolling up
-
-            if (currentFloor > 0) {
-
-                // Go to previous floor
-
-                goToFloor(currentFloor - 1);
-
-            } else {
-
-                // At first floor, go back to intro
-
-                goBackToIntro();
-
-            }
-
-        }
+    isScrolling = true;
 
 
 
-        // Debounce scroll events
+    // Determine scroll direction
 
-        clearTimeout(scrollTimeout);
+    if (e.deltaY > 0) {
 
-        scrollTimeout = setTimeout(() => {
+      // Scrolling down - go to next floor if not at last floor
 
-            isScrolling = false;
+      if (currentFloor < sections.length - 1) {
 
-        }, 200); // Changed from 500 to 200
+        goToFloor(currentFloor + 1);
+
+      }
+
+    } else {
+
+      // Scrolling up
+
+      if (currentFloor > 0) {
+
+        // Go to previous floor
+
+        goToFloor(currentFloor - 1);
+
+      } else {
+
+        // At first floor, go back to intro
+
+        goBackToIntro();
+
+      }
 
     }
+
+
+
+    // Debounce scroll events
+
+    clearTimeout(scrollTimeout);
+
+    scrollTimeout = setTimeout(() => {
+
+      isScrolling = false;
+
+    }, 200); // Changed from 500 to 200
+
+  }
 
 }
 
@@ -636,17 +592,17 @@ function goBackToIntro() {
 
   if (window.lottieAnimations) {
 
-      window.lottieAnimations.forEach(anim => {
+    window.lottieAnimations.forEach(anim => {
 
-          if (anim) {
+      if (anim) {
 
-              anim.destroy();
+        anim.destroy();
 
-          }
+      }
 
-      });
+    });
 
-      window.lottieAnimations = null;
+    window.lottieAnimations = null;
 
   }
 
@@ -656,11 +612,11 @@ function goBackToIntro() {
 
   sections.forEach(section => {
 
-      if (section.id !== 'section1') {
+    if (section.id !== 'section1') {
 
-          section.style.display = 'none';
+      section.style.display = 'none';
 
-      }
+    }
 
   });
 
@@ -696,27 +652,27 @@ function goBackToIntro() {
 
   gsap.to(section1, {
 
-      scale: 0.5,
+    scale: 0.5,
 
-      opacity: 0,
+    opacity: 0,
 
-      duration: 1,
+    duration: 1,
 
-      ease: "power1.inOut",
+    ease: "power1.inOut",
 
-      onComplete: () => {
+    onComplete: () => {
 
-          // CRITICAL: Hide the entire elevator container immediately
+      // CRITICAL: Hide the entire elevator container immediately
 
-          scene.style.visibility = 'hidden';
+      scene.style.visibility = 'hidden';
 
 
 
-          // Start intro transition now that section1 is completely gone
+      // Start intro transition now that section1 is completely gone
 
-          showIntroElements();
+      showIntroElements();
 
-      }
+    }
 
   });
 
@@ -748,47 +704,47 @@ function showIntroElements() {
 
   reverseTimeline
 
-      .to(introContent, {
+    .to(introContent, {
 
-          scale: 1,
+      scale: 1,
 
-          ease: "power1.inOut",
+      ease: "power1.inOut",
 
-          duration: 1
+      duration: 1
 
-      }, 0)
+    }, 0)
 
-      .to(intro, {
+    .to(intro, {
 
-          opacity: 1,
+      opacity: 1,
 
-          ease: "power1.inOut",
+      ease: "power1.inOut",
 
-          duration: 1
+      duration: 1
 
-      }, 0)
+    }, 0)
 
-      // Animate doors closing as intro zooms out
+    // Animate doors closing as intro zooms out
 
-      .to(doorLeft, {
+    .to(doorLeft, {
 
-          x: '0%',  // Close left door
+      x: '0%',  // Close left door
 
-          ease: "power1.inOut",
+      ease: "power1.inOut",
 
-          duration: 1
+      duration: 1
 
-      }, 0)
+    }, 0)
 
-      .to(doorRight, {
+    .to(doorRight, {
 
-          x: '0%',  // Close right door
+      x: '0%',  // Close right door
 
-          ease: "power1.inOut",
+      ease: "power1.inOut",
 
-          duration: 1
+      duration: 1
 
-      }, 0);
+    }, 0);
 
 
 
@@ -796,71 +752,71 @@ function showIntroElements() {
 
   setTimeout(() => {
 
-      // Officially remove elevator scene from DOM flow
+    // Officially remove elevator scene from DOM flow
 
-      scene.classList.remove('show');
-
-
-
-      // Restore section1 but keep it invisible
-
-      const section1 = document.getElementById('section1');
-
-      gsap.set(section1, { scale: 1, opacity: 1 });
+    scene.classList.remove('show');
 
 
 
-      // Make other sections visible again for next time
+    // Restore section1 but keep it invisible
 
-      sections.forEach(section => {
+    const section1 = document.getElementById('section1');
 
-          section.style.display = '';
-
-      });
+    gsap.set(section1, { scale: 1, opacity: 1 });
 
 
 
-      // Reset flags
+    // Make other sections visible again for next time
 
-      transitionComplete = false;
+    sections.forEach(section => {
 
-      isTransitioning = false;
+      section.style.display = '';
 
-
-
-      // Remove event listeners
-
-      window.removeEventListener('wheel', handleElevatorScroll);
-
-      if (isTouchDevice()) {
-
-          window.removeEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
-
-          window.removeEventListener('touchmove', (e) => { e.preventDefault(); });
-
-          window.removeEventListener('touchend', handleTouchEnd);
-
-      }
-
-      window.removeEventListener('keydown', handleKeyboardNavigation);
+    });
 
 
 
-      // Reset scroll position
+    // Reset flags
 
-      window.scrollTo({ top: 0, behavior: 'auto' });
+    transitionComplete = false;
 
-
-
-      // Re-setup GSAP
-
-      setupGSAP();
+    isTransitioning = false;
 
 
 
-      // Finally, restore scene visibility for next time
+    // Remove event listeners
 
-      scene.style.visibility = '';
+    window.removeEventListener('wheel', handleElevatorScroll);
+
+    if (isTouchDevice()) {
+
+      window.removeEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
+
+      window.removeEventListener('touchmove', (e) => { e.preventDefault(); });
+
+      window.removeEventListener('touchend', handleTouchEnd);
+
+    }
+
+    window.removeEventListener('keydown', handleKeyboardNavigation);
+
+
+
+    // Reset scroll position
+
+    window.scrollTo({ top: 0, behavior: 'auto' });
+
+
+
+    // Re-setup GSAP
+
+    setupGSAP();
+
+
+
+    // Finally, restore scene visibility for next time
+
+    scene.style.visibility = '';
 
   }, 1000);
 
@@ -878,47 +834,47 @@ function startIntroTransition() {
 
   reverseTimeline
 
-      .to(introContent, {
+    .to(introContent, {
 
-          scale: 1,
+      scale: 1,
 
-          ease: "power1.inOut",
+      ease: "power1.inOut",
 
-          duration: 1
+      duration: 1
 
-      }, 0)
+    }, 0)
 
-      .to(intro, {
+    .to(intro, {
 
-          opacity: 1,
+      opacity: 1,
 
-          ease: "power1.inOut",
+      ease: "power1.inOut",
 
-          duration: 1
+      duration: 1
 
-      }, 0)
+    }, 0)
 
-      // Animate doors closing as intro zooms out
+    // Animate doors closing as intro zooms out
 
-      .to(doorLeft, {
+    .to(doorLeft, {
 
-          x: '0%',  // Close left door
+      x: '0%',  // Close left door
 
-          ease: "power1.inOut",
+      ease: "power1.inOut",
 
-          duration: 1
+      duration: 1
 
-      }, 0)
+    }, 0)
 
-      .to(doorRight, {
+    .to(doorRight, {
 
-          x: '0%',  // Close right door
+      x: '0%',  // Close right door
 
-          ease: "power1.inOut",
+      ease: "power1.inOut",
 
-          duration: 1
+      duration: 1
 
-      }, 0);
+    }, 0);
 
 
 
@@ -926,55 +882,55 @@ function startIntroTransition() {
 
   setTimeout(() => {
 
-      // Hide elevator scene completely
+    // Hide elevator scene completely
 
-      scene.classList.remove('show');
-
-
-
-      // Reset Section 1 properties now that it's completely hidden
-
-      const section1 = document.getElementById('section1');
-
-      gsap.set(section1, { scale: 1, opacity: 1 });
+    scene.classList.remove('show');
 
 
 
-      // Reset flags
+    // Reset Section 1 properties now that it's completely hidden
 
-      transitionComplete = false;
+    const section1 = document.getElementById('section1');
 
-      isTransitioning = false;
-
-
-
-      // Remove event listeners
-
-      window.removeEventListener('wheel', handleElevatorScroll);
-
-      if (isTouchDevice()) {
-
-          window.removeEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
-
-          window.removeEventListener('touchmove', (e) => { e.preventDefault(); });
-
-          window.removeEventListener('touchend', handleTouchEnd);
-
-      }
-
-      window.removeEventListener('keydown', handleKeyboardNavigation);
+    gsap.set(section1, { scale: 1, opacity: 1 });
 
 
 
-      // Reset scroll position
+    // Reset flags
 
-      window.scrollTo({ top: 0, behavior: 'auto' });
+    transitionComplete = false;
+
+    isTransitioning = false;
 
 
 
-      // Re-setup GSAP
+    // Remove event listeners
 
-      setupGSAP();
+    window.removeEventListener('wheel', handleElevatorScroll);
+
+    if (isTouchDevice()) {
+
+      window.removeEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
+
+      window.removeEventListener('touchmove', (e) => { e.preventDefault(); });
+
+      window.removeEventListener('touchend', handleTouchEnd);
+
+    }
+
+    window.removeEventListener('keydown', handleKeyboardNavigation);
+
+
+
+    // Reset scroll position
+
+    window.scrollTo({ top: 0, behavior: 'auto' });
+
+
+
+    // Re-setup GSAP
+
+    setupGSAP();
 
   }, 1000);
 
@@ -986,87 +942,87 @@ function startIntroTransition() {
 
 function loadLottieAnimations() {
 
-    // Clear any existing animations first
+  // Clear any existing animations first
 
-    document.getElementById("dottie1").innerHTML = "";
+  document.getElementById("dottie1").innerHTML = "";
 
-    document.getElementById("dottie2").innerHTML = "";
+  document.getElementById("dottie2").innerHTML = "";
 
-    document.getElementById("dottie3").innerHTML = "";
+  document.getElementById("dottie3").innerHTML = "";
 
-    document.getElementById("dottie4").innerHTML = "";
-
-
-
-    // Initialize new animation instances
-
-    const anim1 = lottie.loadAnimation({
-
-        container: document.getElementById("dottie1"),
-
-        renderer: "svg",
-
-        loop: true,
-
-        autoplay: true,
-
-        path: "./jsons/piso1.json"
-
-    });
+  document.getElementById("dottie4").innerHTML = "";
 
 
 
-    const anim2 = lottie.loadAnimation({
+  // Initialize new animation instances
 
-        container: document.getElementById("dottie2"),
+  const anim1 = lottie.loadAnimation({
 
-        renderer: "svg",
+    container: document.getElementById("dottie1"),
 
-        loop: true,
+    renderer: "svg",
 
-        autoplay: true,
+    loop: true,
 
-        path: "./jsons/piso2.json"
+    autoplay: true,
 
-    });
+    path: "./jsons/piso1.json"
 
-
-
-    const anim3 = lottie.loadAnimation({
-
-        container: document.getElementById("dottie3"),
-
-        renderer: "svg",
-
-        loop: true,
-
-        autoplay: true,
-
-        path: "./jsons/piso3.json"
-
-    });
+  });
 
 
 
-    const anim4 = lottie.loadAnimation({
+  const anim2 = lottie.loadAnimation({
 
-        container: document.getElementById("dottie4"),
+    container: document.getElementById("dottie2"),
 
-        renderer: "svg",
+    renderer: "svg",
 
-        loop: true,
+    loop: true,
 
-        autoplay: true,
+    autoplay: true,
 
-        path: "./jsons/piso4.json"
+    path: "./jsons/piso2.json"
 
-    });
+  });
 
 
 
-    // Store animation references for later cleanup
+  const anim3 = lottie.loadAnimation({
 
-    window.lottieAnimations = [anim1, anim2, anim3, anim4];
+    container: document.getElementById("dottie3"),
+
+    renderer: "svg",
+
+    loop: true,
+
+    autoplay: true,
+
+    path: "./jsons/piso3.json"
+
+  });
+
+
+
+  const anim4 = lottie.loadAnimation({
+
+    container: document.getElementById("dottie4"),
+
+    renderer: "svg",
+
+    loop: true,
+
+    autoplay: true,
+
+    path: "./jsons/piso4.json"
+
+  });
+
+
+
+  // Store animation references for later cleanup
+
+  window.lottieAnimations = [anim1, anim2, anim3, anim4];
 
 }
 
@@ -1106,43 +1062,43 @@ function goToFloor(index) {
 
   setTimeout(() => {
 
-      // Change active section
+    // Change active section
 
-      document.querySelector(".active").classList.remove("active");
+    document.querySelector(".active").classList.remove("active");
 
-      sections[index].classList.add("active");
-
-
-
-      // Update current floor
-
-      currentFloor = index;
+    sections[index].classList.add("active");
 
 
 
-      // Update floor button indicators
+    // Update current floor
 
-      updateFloorIndicators(currentFloor);
-
-
-
-      // Wait for elevator to "move"
-
-      setTimeout(() => {
-
-          // Open doors
-
-          scene.classList.remove("closed");
-
-          scene.classList.add("open");
+    currentFloor = index;
 
 
 
-          // Reset transition flag
+    // Update floor button indicators
 
-          isTransitioning = false;
+    updateFloorIndicators(currentFloor);
 
-      }, transitionTime);
+
+
+    // Wait for elevator to "move"
+
+    setTimeout(() => {
+
+      // Open doors
+
+      scene.classList.remove("closed");
+
+      scene.classList.add("open");
+
+
+
+      // Reset transition flag
+
+      isTransitioning = false;
+
+    }, transitionTime);
 
   }, transitionTime);
 
@@ -1154,21 +1110,21 @@ function goToFloor(index) {
 
 function updateFloorIndicators(floorIndex) {
 
-    // Update active button
+  // Update active button
 
-    btnLifts.forEach((btn, index) => {
+  btnLifts.forEach((btn, index) => {
 
-        if (index === floorIndex) {
+    if (index === floorIndex) {
 
-            btn.classList.add('active');
+      btn.classList.add('active');
 
-        } else {
+    } else {
 
-            btn.classList.remove('active');
+      btn.classList.remove('active');
 
-        }
+    }
 
-    });
+  });
 
 }
 
@@ -1178,27 +1134,27 @@ function updateFloorIndicators(floorIndex) {
 
 function preventDefaultTouchMove(e) {
 
-    if (!transitionComplete) {
+  if (!transitionComplete) {
 
-        // Only prevent default if we're in a scrollable area
+    // Only prevent default if we're in a scrollable area
 
-        const scrollPos = window.scrollY;
+    const scrollPos = window.scrollY;
 
-        const scrollHeight = document.documentElement.scrollHeight;
+    const scrollHeight = document.documentElement.scrollHeight;
 
-        const windowHeight = window.innerHeight;
+    const windowHeight = window.innerHeight;
 
 
 
-        // If we're not at the top or bottom, prevent default
+    // If we're not at the top or bottom, prevent default
 
-        if (scrollPos > 0 && scrollPos < scrollHeight - windowHeight) {
+    if (scrollPos > 0 && scrollPos < scrollHeight - windowHeight) {
 
-            e.preventDefault();
-
-        }
+      e.preventDefault();
 
     }
+
+  }
 
 }
 
@@ -1208,15 +1164,15 @@ function preventDefaultTouchMove(e) {
 
 window.onload = () => {
 
-    setupGSAP();
+  setupGSAP();
 
 
 
-    // FIXED: Add a CSS class for touch-action: none to the container when in elevator mode
+  // FIXED: Add a CSS class for touch-action: none to the container when in elevator mode
 
-    const addStyle = document.createElement('style');
+  const addStyle = document.createElement('style');
 
-    addStyle.innerHTML = `
+  addStyle.innerHTML = `
 
         .container.show {
 
@@ -1226,31 +1182,31 @@ window.onload = () => {
 
     `;
 
-    document.head.appendChild(addStyle);
+  document.head.appendChild(addStyle);
 
 
 
-    // FIXED: Add debug touch events for mobile testing
+  // FIXED: Add debug touch events for mobile testing
 
-    if (isTouchDevice()) {
+  if (isTouchDevice()) {
 
-        // Debugging touch events
+    // Debugging touch events
 
-        document.addEventListener('touchstart', function(e) {
+    document.addEventListener('touchstart', function (e) {
 
-            console.log('Touch start detected');
+      console.log('Touch start detected');
 
-        });
+    });
 
 
 
-        document.addEventListener('touchend', function(e) {
+    document.addEventListener('touchend', function (e) {
 
-            console.log('Touch end detected');
+      console.log('Touch end detected');
 
-        });
+    });
 
-    }
+  }
 
 };
 
