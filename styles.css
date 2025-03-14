@@ -281,9 +281,48 @@ text-align: center;
 
 /* Mobile optimizations */
 @media (max-width: 767px) {
+  /* Shorter parallax container for quicker scroll completion */
+  .parallax-container {
+    height: 150vh; /* Reduced from 300vh */
+  }
+
   /* Faster door transitions for mobile */
   .door {
-      transition: transform 0.5s ease-in-out;
+    transition: transform 0.2s ease-in-out !important;
+  }
+
+  /* Force hardware acceleration for smoother animations */
+  .intro-content,
+  .door-left,
+  .door-right,
+  .section,
+  #intro,
+  .intro-img {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Optimize touch handling */
+  body, html, .container, #intro {
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Make intro zoom more aggressive */
+  .intro-content {
+    transition: transform 0.3s ease-out;
+  }
+
+  /* Faster pulse animation for scroll indicator */
+  @keyframes pulse {
+    0% { transform: translateY(0); opacity: 0.5; }
+    50% { transform: translateY(10px); opacity: 1; }
+    100% { transform: translateY(0); opacity: 0.5; }
+  }
+
+  .scroll-indicator {
+    animation: pulse 1s infinite; /* Faster (1s instead of 2s) */
   }
 }
 
