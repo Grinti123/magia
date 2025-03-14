@@ -45,18 +45,36 @@ let isTransitioning = false;
 let touchStartY = 0;
 let touchEndY = 0;
 
+// Check if it's a touch device
+const isTouchDevice = () => {
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+};
+
+// Check if it's a mobile device
+const isMobileDevice = () => {
+    return window.innerWidth < 768;
+};
+
 // Initialize GSAP ScrollTrigger
 gsap.registerPlugin(ScrollTrigger);
 
 // Setup GSAP animations
 const setupGSAP = () => {
-  // Create timeline for intro animations with FASTER scrub value
+  // Create timeline for intro animations with MUCH FASTER scrub value for mobile
+  const scrubValue = isMobileDevice() ? 0.1 : 0.5; // Even faster for mobile (0.1 instead of 0.5)
+
+  // Adjust parallax container height based on device
+  // Make it shorter on mobile for faster scrolling completion
+  if (isMobileDevice()) {
+    parallaxContainer.style.height = '150vh'; // Reduced from 300vh to 150vh for mobile
+  }
+
   const introTimeline = gsap.timeline({
       scrollTrigger: {
           trigger: ".parallax-container",
           start: "top top",
           end: "bottom bottom",
-          scrub: 0.5, // Reduced from 1 to 0.5 for faster response
+          scrub: scrubValue,
           onUpdate: (self) => {
               // Update progress bar
               gsap.to(progress, {
@@ -78,8 +96,9 @@ const setupGSAP = () => {
                   ease: "none"
               });
 
-              // Complete transition when progress reaches 90% (instead of 98%)
-              if (self.progress >= 0.90 && !transitionComplete) {
+              // Complete transition when progress reaches 75% for mobile (90% for desktop)
+              const completionThreshold = isMobileDevice() ? 0.75 : 0.90;
+              if (self.progress >= completionThreshold && !transitionComplete) {
                   // Immediately hide the intro to prevent flashing
                   gsap.set(intro, { opacity: 0, visibility: "hidden" });
                   completeTransition();
@@ -89,28 +108,87 @@ const setupGSAP = () => {
   });
 
   // Add animations to timeline with FASTER duration
+  const zoomDuration = isMobileDevice() ? 0.3 : 0.5; // Even faster for mobile
+  const fadeOutStart = isMobileDevice() ? 0.1 : 0.3; // Start fade earlier on mobile
+
   introTimeline
       .to(introContent, {
           scale: 5,
-          ease: "power2.in", // Changed from power1.inOut to power2.in for a quicker feel
-          duration: 0.5      // Reduced from 1 to 0.5 for faster zoom
+          ease: "power3.in", // Changed to power3.in for even faster acceleration
+          duration: zoomDuration
       }, 0)
       .to(intro, {
           opacity: 0,
-          ease: "power2.in", // Changed from power1.inOut to power2.in
-          duration: 0.5      // Reduced from 1 to 0.5
-      }, 0.3);  // Start fade out earlier (changed from 0.5 to 0.3)
+          ease: "power3.in",
+          duration: zoomDuration
+      }, fadeOutStart);
 };
 
-// Check if it's a touch device
-const isTouchDevice = () => {
-    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-};
+// Setup navigation (scroll and touch)
+function setupNavigation() {
+    // Mouse wheel support
+    window.addEventListener('wheel', handleElevatorScroll, { passive: false });
 
-// Check if it's a mobile device
-const isMobileDevice = () => {
-    return window.innerWidth < 768;
-};
+    // Touch support for mobile
+    if (isTouchDevice()) {
+        // Change touchstart to be more responsive
+        window.addEventListener('touchstart', (e) => {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: false });
+
+        window.addEventListener('touchmove', (e) => {
+            if (isTransitioning || !transitionComplete) return;
+            // Prevent default to stop page scrolling during swipe
+            e.preventDefault();
+        }, { passive: false });
+
+        window.addEventListener('touchend', handleTouchEnd, { passive: false });
+    }
+
+    // Keyboard support for accessibility
+    window.addEventListener('keydown', handleKeyboardNavigation);
+}
+
+// Handle touch end for swipe navigation - ENHANCED FOR SENSITIVITY
+function handleTouchEnd(e) {
+    if (isTransitioning || !transitionComplete) return;
+
+    touchEndY = e.changedTouches[0].clientY;
+    const swipeDistance = touchStartY - touchEndY;
+
+    // Significantly reduced threshold to detect swipe for better response
+    // This is the key change for "one swipe is enough"
+    if (Math.abs(swipeDistance) > 5) { // Changed from 10 to 5 - much more sensitive
+        // Prevent default to stop any unwanted behaviors
+        e.preventDefault();
+
+        if (!isScrolling) {
+            isScrolling = true;
+
+            console.log("Swipe detected: ", swipeDistance > 0 ? "UP" : "DOWN");
+
+            if (swipeDistance > 0) {
+                // Swipe up - go to next floor if not at last floor
+                if (currentFloor < sections.length - 1) {
+                    goToFloor(currentFloor + 1);
+                }
+            } else {
+                // Swipe down - go to previous floor or intro
+                if (currentFloor > 0) {
+                    goToFloor(currentFloor - 1);
+                } else {
+                    goBackToIntro();
+                }
+            }
+
+            // Shorter debounce for faster interaction
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                isScrolling = false;
+            }, 100); // Changed from 200 to 100 for faster response time
+        }
+    }
+}
 
 // Modified completeTransition function to completely bypass door transition for first section
 function completeTransition() {
@@ -164,74 +242,7 @@ function completeTransition() {
           leftDoor.style.display = '';
           rightDoor.style.display = '';
       }, 100);
-  }, 500);
-}
-
-// Setup navigation (scroll and touch)
-function setupNavigation() {
-    // Mouse wheel support
-    window.addEventListener('wheel', handleElevatorScroll, { passive: false });
-
-    // Touch support for mobile
-    if (isTouchDevice()) {
-        // FIXED: Changed touchstart event to passive false
-        window.addEventListener('touchstart', (e) => {
-            touchStartY = e.touches[0].clientY;
-        }, { passive: false });
-
-        // FIXED: Added touchmove with passive false to prevent default behavior
-        window.addEventListener('touchmove', (e) => {
-            if (isTransitioning || !transitionComplete) return;
-            // Prevent default to stop page scrolling during swipe
-            e.preventDefault();
-        }, { passive: false });
-
-        window.addEventListener('touchend', handleTouchEnd, { passive: false });
-    }
-
-    // Keyboard support for accessibility
-    window.addEventListener('keydown', handleKeyboardNavigation);
-}
-
-// Handle touch end for swipe navigation
-function handleTouchEnd(e) {
-    if (isTransitioning || !transitionComplete) return;
-
-    touchEndY = e.changedTouches[0].clientY;
-    const swipeDistance = touchStartY - touchEndY;
-
-    // Threshold to detect swipe (lowered for better response)
-    if (Math.abs(swipeDistance) > 10) { // Changed from 20 to 10
-        // Prevent default to stop any unwanted behaviors
-        e.preventDefault();
-
-        if (!isScrolling) {
-            isScrolling = true;
-
-            // FIXED: Added console log for debugging
-            console.log("Swipe detected: ", swipeDistance > 0 ? "UP" : "DOWN");
-
-            if (swipeDistance > 0) {
-                // Swipe up - go to next floor if not at last floor
-                if (currentFloor < sections.length - 1) {
-                    goToFloor(currentFloor + 1);
-                }
-            } else {
-                // Swipe down - go to previous floor or intro
-                if (currentFloor > 0) {
-                    goToFloor(currentFloor - 1);
-                } else {
-                    goBackToIntro();
-                }
-            }
-
-            // Debounce events
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                isScrolling = false;
-            }, 200); // Changed from 500 to 200
-        }
-    }
+  }, 300); // Reduced from 500 to 300 for faster transition
 }
 
 // Keyboard navigation support
@@ -263,7 +274,7 @@ function handleKeyboardNavigation(e) {
             clearTimeout(scrollTimeout);
             scrollTimeout = setTimeout(() => {
                 isScrolling = false;
-            }, 200); // Changed from 500 to 200
+            }, 100); // Reduced from 200 to 100
         }
     }
 
@@ -306,7 +317,7 @@ function handleElevatorScroll(e) {
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(() => {
             isScrolling = false;
-        }, 200); // Changed from 500 to 200
+        }, 100); // Reduced from 200 to 100
     }
 }
 
@@ -345,11 +356,13 @@ function goBackToIntro() {
   gsap.set(doorLeft, { x: '-100%' });
   gsap.set(doorRight, { x: '100%' });
 
-  // Create a zoom-out effect for section 1
+  // Create a zoom-out effect for section 1 - faster on mobile
+  const animDuration = isMobileDevice() ? 0.5 : 1;
+
   gsap.to(section1, {
       scale: 0.5,
       opacity: 0,
-      duration: 1,
+      duration: animDuration,
       ease: "power1.inOut",
       onComplete: () => {
           // CRITICAL: Hide the entire elevator container immediately
@@ -370,32 +383,36 @@ function showIntroElements() {
   // Set initial state for intro (zoomed in)
   gsap.set(introContent, { scale: 3 });
 
-  // Animate intro content and doors
+  // Animate intro content and doors - faster on mobile
+  const animDuration = isMobileDevice() ? 0.5 : 1;
+
   const reverseTimeline = gsap.timeline();
   reverseTimeline
       .to(introContent, {
           scale: 1,
           ease: "power1.inOut",
-          duration: 1
+          duration: animDuration
       }, 0)
       .to(intro, {
           opacity: 1,
           ease: "power1.inOut",
-          duration: 1
+          duration: animDuration
       }, 0)
       // Animate doors closing as intro zooms out
       .to(doorLeft, {
           x: '0%',  // Close left door
           ease: "power1.inOut",
-          duration: 1
+          duration: animDuration
       }, 0)
       .to(doorRight, {
           x: '0%',  // Close right door
           ease: "power1.inOut",
-          duration: 1
+          duration: animDuration
       }, 0);
 
-  // After the intro animation completes, finish cleanup
+  // After the intro animation completes, finish cleanup - faster on mobile
+  const cleanupDelay = isMobileDevice() ? 500 : 1000;
+
   setTimeout(() => {
       // Officially remove elevator scene from DOM flow
       scene.classList.remove('show');
@@ -430,64 +447,58 @@ function showIntroElements() {
 
       // Finally, restore scene visibility for next time
       scene.style.visibility = '';
-  }, 1000);
+  }, cleanupDelay);
 }
 
-// Separate function to handle the intro transition
-function startIntroTransition() {
-  // Animate intro content and doors
-  const reverseTimeline = gsap.timeline();
-  reverseTimeline
-      .to(introContent, {
-          scale: 1,
-          ease: "power1.inOut",
-          duration: 1
-      }, 0)
-      .to(intro, {
-          opacity: 1,
-          ease: "power1.inOut",
-          duration: 1
-      }, 0)
-      // Animate doors closing as intro zooms out
-      .to(doorLeft, {
-          x: '0%',  // Close left door
-          ease: "power1.inOut",
-          duration: 1
-      }, 0)
-      .to(doorRight, {
-          x: '0%',  // Close right door
-          ease: "power1.inOut",
-          duration: 1
-      }, 0);
+// Modified goToFloor function to ensure we use door transitions for navigation
+function goToFloor(index) {
+  if (isTransitioning || currentFloor === index) return;
+  isTransitioning = true;
 
-  // After the animation is complete, finish cleanup
+  // FIXED: Added console log for debugging
+  console.log("Going to floor:", index + 1);
+
+  // Close the doors
+  scene.classList.remove("open");
+  scene.classList.add("closed");
+
+  // Get the transition time based on device type - MUCH faster for mobile
+  const transitionTime = isMobileDevice() ? 200 : 1000; // Changed from 300 to 200 for mobile
+
+  // Wait for doors to close
   setTimeout(() => {
-      // Hide elevator scene completely
-      scene.classList.remove('show');
+      // Change active section
+      document.querySelector(".active").classList.remove("active");
+      sections[index].classList.add("active");
 
-      // Reset Section 1 properties now that it's completely hidden
-      const section1 = document.getElementById('section1');
-      gsap.set(section1, { scale: 1, opacity: 1 });
+      // Update current floor
+      currentFloor = index;
 
-      // Reset flags
-      transitionComplete = false;
-      isTransitioning = false;
+      // Update floor button indicators
+      updateFloorIndicators(currentFloor);
 
-      // Remove event listeners
-      window.removeEventListener('wheel', handleElevatorScroll);
-      if (isTouchDevice()) {
-          window.removeEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
-          window.removeEventListener('touchmove', (e) => { e.preventDefault(); });
-          window.removeEventListener('touchend', handleTouchEnd);
-      }
-      window.removeEventListener('keydown', handleKeyboardNavigation);
+      // Wait for elevator to "move" - faster on mobile
+      setTimeout(() => {
+          // Open doors
+          scene.classList.remove("closed");
+          scene.classList.add("open");
 
-      // Reset scroll position
-      window.scrollTo({ top: 0, behavior: 'auto' });
+          // Reset transition flag
+          isTransitioning = false;
+      }, transitionTime);
+  }, transitionTime);
+}
 
-      // Re-setup GSAP
-      setupGSAP();
-  }, 1000);
+// Update floor indicators
+function updateFloorIndicators(floorIndex) {
+    // Update active button
+    btnLifts.forEach((btn, index) => {
+        if (index === floorIndex) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
 }
 
 // Load Lottie animations
@@ -535,67 +546,26 @@ function loadLottieAnimations() {
     window.lottieAnimations = [anim1, anim2, anim3, anim4];
 }
 
-// Modified goToFloor function to ensure we use door transitions for navigation
-function goToFloor(index) {
-  if (isTransitioning || currentFloor === index) return;
-  isTransitioning = true;
-
-  // FIXED: Added console log for debugging
-  console.log("Going to floor:", index + 1);
-
-  // Close the doors
-  scene.classList.remove("open");
-  scene.classList.add("closed");
-
-  // Get the transition time based on device type
-  const transitionTime = isMobileDevice() ? 300 : 1000; // Changed from 500 to 300 for mobile
-
-  // Wait for doors to close
-  setTimeout(() => {
-      // Change active section
-      document.querySelector(".active").classList.remove("active");
-      sections[index].classList.add("active");
-
-      // Update current floor
-      currentFloor = index;
-
-      // Update floor button indicators
-      updateFloorIndicators(currentFloor);
-
-      // Wait for elevator to "move"
-      setTimeout(() => {
-          // Open doors
-          scene.classList.remove("closed");
-          scene.classList.add("open");
-
-          // Reset transition flag
-          isTransitioning = false;
-      }, transitionTime);
-  }, transitionTime);
-}
-
-// Update floor indicators
-function updateFloorIndicators(floorIndex) {
-    // Update active button
-    btnLifts.forEach((btn, index) => {
-        if (index === floorIndex) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-}
-
-// FIXED: Add touchmove handler for the intro section as well
-function preventDefaultTouchMove(e) {
+// Add improved touchmove handling for better mobile responsiveness
+function handleTouchMove(e) {
     if (!transitionComplete) {
-        // Only prevent default if we're in a scrollable area
-        const scrollPos = window.scrollY;
-        const scrollHeight = document.documentElement.scrollHeight;
-        const windowHeight = window.innerHeight;
+        // During intro, let's calculate if we should trigger immediate completion
+        // This helps with "one swipe is enough" on the intro screen
+        const touch = e.touches[0];
+        const currentTouchY = touch.clientY;
 
-        // If we're not at the top or bottom, prevent default
-        if (scrollPos > 0 && scrollPos < scrollHeight - windowHeight) {
+        // Calculate distance moved
+        const touchDistance = touchStartY - currentTouchY;
+
+        // If significant downward swipe detected (>50px) during intro
+        if (touchDistance > 50 && !transitionComplete) {
+            // Force immediate completion of intro
+            ScrollTrigger.getAll().forEach(st => {
+                // Force progress to 100%
+                st.scroll(st.end);
+            });
+
+            // Prevent default behavior
             e.preventDefault();
         }
     }
@@ -605,24 +575,70 @@ function preventDefaultTouchMove(e) {
 window.onload = () => {
     setupGSAP();
 
-    // FIXED: Add a CSS class for touch-action: none to the container when in elevator mode
+    // Add CSS class for touch-action: none to the container when in elevator mode
     const addStyle = document.createElement('style');
     addStyle.innerHTML = `
         .container.show {
             touch-action: none;
         }
+
+        /* Add specific mobile optimizations in CSS */
+        @media (max-width: 767px) {
+            .door {
+                transition: transform 0.3s ease-in-out !important;
+            }
+
+            /* Force hardware acceleration for smoother animations */
+            .intro-content, .door-left, .door-right, .section {
+                transform: translateZ(0);
+                will-change: transform;
+            }
+        }
     `;
     document.head.appendChild(addStyle);
 
-    // FIXED: Add debug touch events for mobile testing
+    // Add the enhanced touch handlers for mobile
     if (isTouchDevice()) {
-        // Debugging touch events
-        document.addEventListener('touchstart', function(e) {
-            console.log('Touch start detected');
-        });
+        // Add our new touchmove handler for better intro scrolling
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
 
-        document.addEventListener('touchend', function(e) {
-            console.log('Touch end detected');
-        });
+        // Add additional touch event handler with direction detection
+        let lastTouchY = 0;
+        let touchDirectionChange = false;
+
+        document.addEventListener('touchmove', function(e) {
+            const currentY = e.touches[0].clientY;
+
+            // Detect if direction changed during swipe
+            if ((currentY > lastTouchY && touchStartY < lastTouchY) ||
+                (currentY < lastTouchY && touchStartY > lastTouchY)) {
+                touchDirectionChange = true;
+            }
+
+            lastTouchY = currentY;
+
+            // If in intro and significant distance traveled in one direction,
+            // advance progress faster for more responsive feel
+            if (!transitionComplete && !touchDirectionChange &&
+                Math.abs(touchStartY - currentY) > 30) {
+                // Speed up progress
+                const st = ScrollTrigger.getAll()[0];
+                if (st) {
+                    // Jump ahead in progress
+                    const jumpAmount = currentY < touchStartY ? 0.2 : -0.2;
+                    const newProgress = Math.max(0, Math.min(1, st.progress + jumpAmount));
+                    st.scroll(st.start + (st.end - st.start) * newProgress);
+                }
+            }
+        }, { passive: false });
+
+        // Reset direction change flag on new touch
+        document.addEventListener('touchstart', function() {
+            touchDirectionChange = false;
+            // Set a flag specifically for intro fast-track
+            if (!transitionComplete) {
+                window.fastTrackIntro = true;
+            }
+        }, { passive: false });
     }
 };
